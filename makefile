@@ -1,6 +1,6 @@
 include make.inc
 LOCALOBJ= \
-	gen_tools.o \
+	gen_tools_swirl.o \
 	cons_tools.o \
 	comm_tools.o \
 	para_tools.o \
@@ -16,7 +16,7 @@ LOCALOBJ= \
         poisson.o \
         poisson_solve.o \
         momentum_coef.o \
-        momentum_terms.o \
+        momentum_terms_swirl.o \
         step.o \
         communicate.o \
         divergence.o \
@@ -25,8 +25,8 @@ LOCALOBJ= \
 
 a.exe: main.o
 	mkdir -p VR2D
-	$(LNK) -o  VR_00.EXE $(OPT)  main.o $(LOCALOBJ) $(PETSC_LIB) $(LIB_FFTW) 
-	mv VR_00.EXE VR2D
+	$(LNK) -o  vr.exe $(OPT)  main.o $(LOCALOBJ) $(PETSC_LIB) $(LIB_FFTW) 
+	mv vr.exe VR2D
 
 # Here are the compile steps
 

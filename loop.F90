@@ -39,9 +39,9 @@ module loop
 
       var%con%timming0= MPI_Wtime()/60.0
 ! Time advancement loop start
-    do istep= 1,var%par%totstp
+    do istep= 0,var%par%totstp
 !      do istep= 1,1000
-      call iter_part(var%prt,var%msh,var%com,var%su,var%par)
+!      call iter_part(var%prt,var%msh,var%com,var%su,var%par)
 ! Update timestep
         var%par%istep = istep
         var%par%nstep = istep+var%par%nstepi
@@ -115,9 +115,9 @@ module loop
 
 ! RK Loop end
 
-        var%con%timming2= MPI_Wtime()/60.0
-        var%con%timming3= MPI_Wtime()/60.0
-        if (mod((var%par%nstep-1),var%par%expstp).eq.0)   call restart_save(var);  call verbose(var,"export solve  called") 
+       var%con%timming2= MPI_Wtime()/60.0
+       var%con%timming3= MPI_Wtime()/60.0
+       if (mod((var%par%nstep),var%par%expstp).eq.0)   call restart_save(var);  call verbose(var,"export solve  called") 
 
         if (mod((var%par%nstep),var%par%anlstp).eq.0) call analysis(var);  call verbose(var,"analysis called") 
 !        if (mod((var%par%nstep-1),var%par%expstp).eq.0) call ffemexport(var,1);  call verbose(var,"ffemexp  called") 

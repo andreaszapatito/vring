@@ -1,0 +1,24 @@
+Domain decomposition__(comm)_
+n. processors (th,r,z):        00000001        00000002        00000004
+Mesh characteristics__(mesh)_
+nth,nr,nz   local     :        00000001        00000128        00000256
+nth,nr,nz   global    :        00000001        00000256        00001024
+dth,dr,dz             :      6.28318531      0.00390625      0.00390625
+rmax                  :      0.50000000      0.00195312      0.49804688
+zmax                  :      1.00000000      0.00195312      0.99804688
+Problem constants_____(cons)_
+solver                :
+Problem parameters____(para)_
+total steps           :        00050000
+export every          :        00001000
+analys every          :        00001000
+restart               :        00000000
+u1,v2,w3    nominal   :      0.00000000      0.00000000      0.00000000
+ur,wr,uf,kf nominal   :      0.00000000      0.00000000      0.00000000     16.00000000
+rw,r0,t0              :      1.50000000      0.50000000      5.00000000
+p           nominal   :      1.00000000
+Re                    :   5000.00000000
+Pe                    :      1.00000000
+dt                    :      0.00010000
+rkstep                :        00000003
+slip                  :      0.00000000

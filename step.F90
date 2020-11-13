@@ -376,7 +376,7 @@ module inverse
     if     (ieq.eq.1) then
       ij=1
       dt=var%par%dt
-      uin=(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*var%msh%rc(jc)*(profile(var%par%ntime)-profile(var%par%ntime-dt))
+!      uin=(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*var%msh%rc(jc)*(profile(var%par%ntime)-profile(var%par%ntime-dt))
       uin=0.d0
       uot=0.d0
       nzloc=var%msh%nzc
@@ -395,7 +395,7 @@ module inverse
       dt=var%par%dt
       ts=0.5
 !      uin= 1.0*((3.0*(var%par%ntime/ts)**2.0 - 2.0*(var%par%ntime/ts)**3.0)-(3.0*((var%par%ntime-dt)/ts)**2.0 - 2.0*((var%par%ntime-dt)/ts)**3.0))
-        uin=(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*(profile(var%par%ntime)-profile(var%par%ntime-dt))
+!        uin=(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*(profile(var%par%ntime)-profile(var%par%ntime-dt))
         
        uin=0.0
 !      if (var%par%ntime.gt.ts) uin=0.0
@@ -419,7 +419,7 @@ module inverse
 
       if (ieq.eq.1) then
       dt=var%par%dt
-      uin=1.0*(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*var%msh%rc(jc)*(profile(var%par%ntime)-profile(var%par%ntime-dt))
+ !     uin=1.0*(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*var%msh%rc(jc)*(profile(var%par%ntime)-profile(var%par%ntime-dt))
       uin=0.0
       uot=0.d0
       endif  
@@ -454,11 +454,11 @@ module inverse
 
 !       var%su%rtri(var%msh%nzc)=+0.0
 !       var%su%rtri(1          )=+0.0
-      if(ieq.eq.1.and.var%com%ip_a(3).eq.var%com%np_a(3)-1) var%su%rtri(var%msh%nzc)=+0.*var%su%corr3n(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
-      if(ieq.eq.1.and.var%com%ip_a(3).eq.0) var%su%rtri(1)=+0.*var%su%corr3s(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
+      if(ieq.eq.1.and.var%com%ip_a(3).eq.var%com%np_a(3)-1) var%su%rtri(var%msh%nzc)=+0.*var%su%corr1n(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
+      if(ieq.eq.1.and.var%com%ip_a(3).eq.0) var%su%rtri(1)=+1.*var%su%corr1s(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
 
-      if(ieq.eq.2.and.var%com%ip_a(3).eq.var%com%np_a(3)-1) var%su%rtri(var%msh%nzc)=+0.*var%su%corr3n(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
-      if(ieq.eq.2.and.var%com%ip_a(3).eq.0) var%su%rtri(1)=+0.*var%su%corr3s(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
+      if(ieq.eq.2.and.var%com%ip_a(3).eq.var%com%np_a(3)-1) var%su%rtri(var%msh%nzc)=+0.*var%su%corr2n(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
+      if(ieq.eq.2.and.var%com%ip_a(3).eq.0) var%su%rtri(1)=+1.*var%su%corr2s(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
 
       if(ieq.eq.3.and.var%com%ip_a(3).eq.var%com%np_a(3)-1) var%su%rtri(var%msh%nzc)=+1.*var%su%corr3n(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)
       if(ieq.eq.3.and.var%com%ip_a(3).eq.0) var%su%rtri(1)=+1.*var%su%corr3s(ic,jc)                    ! quand Vtheta_sud impose (voir coesys.f)

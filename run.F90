@@ -446,7 +446,7 @@ module run_tools
 
         do ith=1,var%msh%ntheta
 !          write (22,"(10(E25.16))") var%su%q1(ith,ir,iz),var%su%q2(ith,ir,iz),var%su%q3(ith,ir,iz)
-          write (22) var%su%q1(ith,ir,iz),var%su%q2(ith,ir,iz),var%su%q3(ith,ir,iz)
+          write (22) var%su%q1(ith,irl,izl),var%su%q2(ith,irl,izl),var%su%q3(ith,irl,izl)
         enddo
         if (irl.eq.var%msh%nr) then
           close(22)
@@ -516,12 +516,14 @@ module run_tools
           if ((var%com%ip_a(2).eq.ipr).and.(var%com%ip_a(3).eq.ipz)) then
             do ith=1,var%msh%ntheta
 !              read  (22,"(10(E25.16))") var%su%q1(ith,ir,iz),var%su%q2(ith,ir,iz),var%su%q3(ith,ir,iz)
-              read  (22) var%su%q1(ith,ir,iz),var%su%q2(ith,ir,iz),var%su%q3(ith,ir,iz)
+              read  (22) var%su%q1(ith,irl,izl),var%su%q2(ith,irl,izl),var%su%q3(ith,irl,izl)
             enddo
 !            write (*,*) "part",var%com%ip_a(2),var%com%ip_a(3),ir,iz
           else
+            do ith=1,var%msh%ntheta
 !            read  (22,"(10(E25.16))") buf,buf,buf
-            read  (22) buf,buf,buf
+              read  (22) buf,buf,buf
+            enddo
           endif
         enddo
       enddo
