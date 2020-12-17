@@ -78,7 +78,6 @@ module communicate
     allocate (recv_bf(nbuff,mbuff))
 
     call mpi_barrier(var%com%comm_0, ierr)
-
 !   communicate east nort
 
     msgsize=nbuff*mbuff

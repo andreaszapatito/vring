@@ -245,7 +245,7 @@ module run_tools
   integer                   :: ipass
   integer                   :: ipr,ipz
   integer                   :: izl,irl
-  integer                   :: ith
+  integer                   :: ith,ithp1
   integer                   :: ip
   real(kind=8)              :: xc,yc,ux,uy,l2(3),l2all(3),q3sol,q2sol,q1sol,q1m,q2m,q3m
   real(kind=8)              :: vortmax,swrlmax,dwdr,dvdz,vort,swrl,xvort,yvort,xswrl,yswrl,vortmaxall,swrlmaxall,vvort,vswrl,uvort,uswrl,xvortold,xswrlold,xvortnew,xswrlnew
@@ -302,6 +302,8 @@ module run_tools
         do iz=1,var%msh%nz
           do ir=1,var%msh%nr
             do ith=1,var%msh%ntheta
+              ithp1=ith+1
+              if (ithp1>var%msh%ntheta) ithp1=1
               if (ir.eq.1.and.var%com%ip_a(2).eq.0) var%su%q3(ith,0,iz)=var%su%q3(ith,1,iz)
               if (ir.eq.1.and.var%com%ip_a(2).eq.0) var%su%q2(ith,0,iz)=var%su%q2(ith,1,iz)
               if (ir.eq.1.and.var%com%ip_a(2).eq.0) var%su%q1(ith,0,iz)=var%su%q1(ith,1,iz)
@@ -310,7 +312,7 @@ module run_tools
 !!            if (ir.eq.1.and.iz.eq.var%msh%nz) var%su%q3(ith,0,iz+1)=var%su%q3(ith,1,iz+1)
               xc=var%msh%rm(ir)*cos(var%msh%thm(ith))
               yc=var%msh%rm(ir)*sin(var%msh%thm(ith))
-              if (var%msh%ntheta.gt.1) q1m=0.5*(var%su%q1(ith,ir,iz)+var%su%q1(ith+1,ir,iz))
+              if (var%msh%ntheta.gt.1) q1m=0.5*(var%su%q1(ith,ir,iz)+var%su%q1(ithp1,ir,iz))
               if (var%msh%ntheta.eq.1) q1m=1.0*(var%su%q1(ith,ir,iz))
               q2m=0.5*(var%su%q2(ith,ir,iz)+var%su%q2(ith,ir+1,iz))
               q3m=0.5*(var%su%q3(ith,ir,iz)+var%su%q3(ith,ir,iz+1))

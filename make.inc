@@ -3,9 +3,10 @@ ROOT           = ~/
 
 #Compiler options
 PREPROC        = -cpp
-#OPT           = -g2 -CB  -zero -traceback
-OPT            = -O3  -ffree-line-length-none -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread -I/usr/lib/x86_64-linux-gnu/openmpi/lib
+#OPT            = -O3  -ffree-line-length-none -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread -I/usr/lib/x86_64-linux-gnu/openmpi/lib
 
+#OPT           = -g  -fcheck='all'   -ffree-line-length-none
+OPT           = -O3  -ffree-line-length-none -pthread
 
 #FFTW related
 INC_FFTW       = -I/home/andreas/Local/fftw/fftw-3.3.8/install/include/

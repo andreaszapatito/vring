@@ -41,7 +41,10 @@ module loop
 ! Time advancement loop start
     do istep= 0,var%par%totstp
 !      do istep= 1,1000
-!      call iter_part(var%prt,var%msh,var%com,var%su,var%par)
+      if (mod(var%par%nstep,var%prt%inj)==0) call inlt_part(var%par,var%prt,var%msh,var%su,var%com)
+!      if (var%par%nstep==1) call inlt_part(var%par,var%prt,var%msh,var%su,var%com)
+
+      call iter_part(var%prt,var%msh,var%com,var%su,var%par)
 ! Update timestep
         var%par%istep = istep
         var%par%nstep = istep+var%par%nstepi

@@ -137,7 +137,7 @@ module gen_tools
             pi=4.0*atan(1.0)
             if (r<0.5) then
               u=min(0.2,t*r)
-              u=-0.2*4.0*r*r*sin(10.0*2.0*pi*t)*sin(5.0*2.0*pi*r/0.5)*cos(30.0*th)
+              u=-0.1*4.0*r*r*sin(10.0*2.0*pi*t)*sin(5.0*2.0*pi*r/0.5)*cos(30.0*th)
             endif
           end function  profilet
           function profiler(t,r,th) result(u)
@@ -149,25 +149,26 @@ module gen_tools
             pi=4.0*atan(1.0)
             if (r<0.5) then
               u=min(0.2,t*r)
-              u= 0.2*4.0*r*r*sin(10.0*2.0*pi*t)*cos(5.0*2.0*pi*r/0.5)*sin(30.0*th)
+              u=0.1*4.0*r*r*sin(10.0*2.0*pi*t)*cos(5.0*2.0*pi*r/0.5)*sin(30.0*th)
             endif
 
           end function  profiler
 
           function profile(t,r,th) result(u)
             implicit none
-            real(kind=8)      :: t,tt,r,th
+            real(kind=8)      :: t,tt,r,th,pi,n,t1,t2
             real(kind=8)      :: u
             tt=t
-            if (tt.gt.2.0) tt=tt-2.0
-            if (tt.gt.0.0.and.tt.lt.0.2) u=3.0*(tt/0.2)**2-2.0*(tt/0.2)**3
-            if (tt.gt.0.2.and.tt.lt.1.4) u=1.0
-!            if (t.gt.1.4.and.t.lt.1.6) u=3.0*((1.6-t)/0.2)**2-2.0*((1.6-t)/0.2)**3
-!            if (t.gt.1.4) u=1.0
-            if (tt.gt.1.4.and.tt.lt.1.6) u=3.0*((1.6-tt)/0.2)**2-2.0*((1.6-tt)/0.2)**3
-            if (tt.gt.1.6) u=0.0
-            u=sin(0.5*2.0*3.1415*t)+0.1*sin(5.0*2.0*3.1415*t)
-            u=min(1.0,t)
+!           tt=mod(t,2.0)
+            pi=4.0*atan(1.0)
+            n=2.0
+            t1=0.1*n
+            t2=0.9*n
+            
+            if (tt.gt.0.0.and.tt.lt.t1) u=3.0*(tt/t1)**2-2.0*(tt/t1)**3
+            if (tt.gt.t1.and.tt.lt.n) u=1.0
+            if (tt.gt.n.and.tt.lt.n+t1) u=3.0*((n+t1-tt)/t1)**2-2.0*((n+t1-tt)/t1)**3
+            if (tt.gt.n+t1) u=0.0
           end function  profile
 
           function uvring(r1,x1,t1,epsilon) result(u)

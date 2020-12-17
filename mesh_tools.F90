@@ -12,6 +12,7 @@ module mesh_type
      integer                   :: iizc2,ifzc2,iirc2,ifrc2,iithetac2,ifthetac2
      integer                   :: iizc3,ifzc3,iirc3,ifrc3,iithetac3,ifthetac3
      real(kind=8)              :: rmin, rmax, zmin, zmax, thmin, thmax
+     real(kind=8)              :: drmin, drmax, dzmin, dzmax, dthmin, dthmax
      real(kind=8)              :: rmaxg, zmaxg
      real(kind=8)              :: axsym
      integer                   :: if_grad_null
@@ -220,7 +221,10 @@ contains
        msh%thmax = (com%ip_a(1)+1)*2.d0*acos(-1.d0)/com%np_a(1)
 
 
-!   Not sure for the following 
+       msh%drmin  = 0.0
+       msh%drmax  = msh%rmax
+       msh%dzmin  = 0.0
+       msh%dzmax  = msh%zmax
 
        msh%rmin  = com%ip_a(2)*msh%rmax/com%np_a(2)
        msh%rmax  = (com%ip_a(2)+1)*msh%rmax/com%np_a(2)

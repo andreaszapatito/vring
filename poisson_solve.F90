@@ -296,7 +296,7 @@ contains
 !       wz  = (pi*real(wavenumbers(2))/msh%zmaxg)**2
 !       wz  = 2.d0/msh%dz**2*(1.d0-cos(wavenumbers(2)*pi/msh%nzg)) !Francy 1907
     aa = sp%aa_base
-    bb = sp%bb_base + wth/msh%rm**2 + wz
+    bb = sp%bb_base + wth/msh%rm(1:msh%nr)**2 + wz
     cc = sp%cc_base
 !    write (*,*) 'station 1', (aa(ii),ii=1,3)
 !    write (*,*) 'station 2', (bb(ii),ii=1,3)

@@ -1,6 +1,5 @@
 module divergence
 
-#include <petsc/finclude/petscdef.h>
   use run_tools
   use cons_tools
   use para_tools
