@@ -444,87 +444,185 @@ module part_tools
           theta=dacos(-x/r)+4.0*datan(1.d0)
         endif  
              
-        it=floor(theta/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
-        ir=floor(r/msh%dr)+1-com%ip_a(2)*msh%nr
-        iz=floor(z/msh%dz)+1-com%ip_a(3)*msh%nz
+!        it=floor(theta/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+!        ir=floor(r/msh%dr)+1-com%ip_a(2)*msh%nr
+!        iz=floor(z/msh%dz)+1-com%ip_a(3)*msh%nz
         !write(*,*) x,y,z,it,ir,iz,theta,msh%dtheta,com%ip_a(1),msh%ntheta
-        if (it.ge.1.and.it.le.msh%ntheta.and.ir.ge.1.and.ir.le.msh%nr.and.iz.ge.1.and.iz.le.msh%nz) then 
-          ut=su%q1(it,ir,iz)
-          ur=su%q2(it,ir,iz)/msh%rm(ir)
-          uz=su%q3(it,ir,iz)
-          irc=0
-          izc=0
+
+        do ivar=1,3
+          if (ivar==1) then
+          it=nint(theta/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+          if (msh%ntheta.eq.1) it=1
+            ir=nint((r-0.5*msh%dr)/msh%dr)+1-com%ip_a(2)*msh%nr
+            iz=nint((z-0.5*msh%dz)/msh%dz)+1-com%ip_a(3)*msh%nz
+          endif
+
+          if (ivar==2) then
+            it=nint((theta-0.5*msh%dtheta)/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+            if (msh%ntheta.eq.1) it=1
+            ir=nint(r/msh%dr)+1-com%ip_a(2)*msh%nr
+            iz=nint((z-0.5*msh%dz)/msh%dz)+1-com%ip_a(3)*msh%nz
+          endif
+
+          if (ivar==3) then
+            it=nint((theta-0.5*msh%dtheta)/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+            if (msh%ntheta.eq.1) it=1
+            ir=nint((r-0.5*msh%dr)/msh%dr)+1-com%ip_a(2)*msh%nr
+            iz=nint(z/msh%dz)+1-com%ip_a(3)*msh%nz
+          endif
+
+
+          if (it.ge.1.and.it.le.msh%ntheta.and.ir.ge.1.and.ir.le.msh%nr.and.iz.ge.1.and.iz.le.msh%nz) then 
+            ut=su%q1(it,ir,iz)
+            ur=su%q2(it,ir,iz)/msh%rm(ir)
+            uz=su%q3(it,ir,iz)
+            irc=0
+            izc=0
     
-          if (ir.ge.msh%nr) irc=-1
-          if (ir.le.1) irc=1
-          if (iz.ge.msh%nz) izc=-1
-          if (iz.le.1) izc=1
+            if (ir.ge.msh%nr) irc=-1
+            if (ir.le.1) irc=1
+            if (iz.ge.msh%nz) izc=-1
+            if (iz.le.1) izc=1
     
           
-          do ifst1=-1,1,1
             do ifst2=-1,1,1
               do ifst3=-1,1,1
-                 iv=1+(ifst1+1)+3*(ifst2+1)+9*(ifst3+1)
-                 itof=it+ifst1
-                 if (itof.gt.msh%ntheta) itof=1
-                 if (itof.lt.1) itof=msh%ntheta
-                 irof=ir+ifst2+irc
-                 izof=iz+ifst3+izc
+                do ifst1=-1,1,1
+                  iv=1+(ifst1+1)+3*(ifst2+1)+9*(ifst3+1)
+                  itof=it+ifst1
+                  if (itof.gt.msh%ntheta) itof=1
+                  if (itof.lt.1) itof=msh%ntheta
+                  irof=ir+ifst2+irc
+                  izof=iz+ifst3+izc
                  
-                 prt%yint(iv,1)=su%q1(itof,irof,izof)
-                 prt%yint(iv,2)=su%q2(itof,irof,izof)/msh%rc(irof)
-                 prt%yint(iv,3)=su%q3(itof,irof,izof)
+                  prt%yint(iv,1)=su%q1(itof,irof,izof)
+                  prt%yint(iv,2)=su%q2(itof,irof,izof)/msh%rc(irof)
+                  prt%yint(iv,3)=su%q3(itof,irof,izof)
+                enddo
               enddo
             enddo
-          enddo
-          do ivar=1,3
+            y0(ivar)=prt%yint(14,ivar)
+            do iv=1,27
+              prt%yint(iv,ivar)=prt%yint(iv,ivar)-y0(ivar)
+            enddo
+            prt%acoef(:)=0.d0
+
             do iint=1,prt%nitr
               call interpolation (prt%xint,prt%acoef,prt%rint)
-              prt%mp=-matmul(prt%mint,prt%rint-prt%yint(:,ivar))
-              prt%acoef=prt%acoef-prt%mp
+              do i=1,9
+                prt%mp(i)=0.0
+                do k=1,27
+                  prt%mp(i)=prt%mp(i)-prt%mint(i,k)*(prt%rint(k)-prt%yint(k,ivar))
+                enddo
+              enddo
+              do i=1,9
+                prt%acoef(i)=prt%acoef(i)+prt%mp(i)
+              enddo
+
+!             prt%mp=-matmul(prt%mint,prt%rint-prt%yint(:,ivar))
+!              prt%acoef=prt%acoef-prt%mp
               if (norm2(prt%mp).lt.0.000001) exit
             enddo
           
             if (ivar.eq.1) then
               dtp=theta-msh%thc(it)
-              drp=r-msh%rm(it)
-              dzp=z-msh%zm(it)
+              drp=r-msh%rm(ir)
+              dzp=z-msh%zm(iz)
             endif
-              
+
             if (ivar.eq.2) then
               dtp=theta-msh%thm(it)
-              drp=r-msh%rc(it)
-              dzp=z-msh%zm(it)
+              drp=r-msh%rc(ir)
+              dzp=z-msh%zm(iz)
             endif
-              
+
             if (ivar.eq.3) then
               dtp=theta-msh%thm(it)
-              drp=r-msh%rm(it)
-              dzp=z-msh%zc(it)
+              drp=r-msh%rm(ir)
+              dzp=z-msh%zc(iz)
             endif
-            if (dtp.gt.8.d0*datan(1.d0)) dtp=dtp-8.d0*datan(1.d0)
-            if (dtp.lt.-8.d0*datan(1.d0)) dtp=dtp+8.d0*datan(1.d0)
-             f=dtp*prt%acoef(1)+drp*prt%acoef(2)+dzp*prt%acoef(3)+dtp*dtp*prt%acoef(4)+dtp*drp*prt%acoef(5)+drp*drp*prt%acoef(6)+drp*dzp*prt%acoef(7)+dzp*dzp*prt%acoef(8)+dzp*dtp*prt%acoef(9)
-             ft=prt%acoef(1)+2.0*dtp*prt%acoef(4)+drp*prt%acoef(5)+dzp*prt%acoef(9)
-             ftt=2.0*prt%acoef(4)
-             ftr=drp*prt%acoef(5)
-             ftz=dzp*prt%acoef(9)
-             fr=prt%acoef(2)+dtp*prt%acoef(5)+2.0*drp*prt%acoef(6)+dzp*prt%acoef(7)
-             frt=prt%acoef(5)
-             frr=2.0*prt%acoef(6)
-             frz=prt%acoef(7)
-             fz=prt%acoef(3)+drp*prt%acoef(7)+2.0*dzp*prt%acoef(8)+dtp*prt%acoef(9)
-             fzt=prt%acoef(9)
-             fzr=prt%acoef(7)
-             fzz=2.0*prt%acoef(8)
+
+            if (dtp.gt.msh%dtheta) dtp=dtp-8.d0*datan(1.d0)
+            if (dtp.lt.-msh%dtheta) dtp=dtp+8.d0*datan(1.d0)
+
+
+            f=dtp*prt%acoef(1)+drp*prt%acoef(2)+dzp*prt%acoef(3)+dtp*dtp*prt%acoef(4)+dtp*drp*prt%acoef(5)+drp*drp*prt%acoef(6)+drp*dzp*prt%acoef(7)+dzp*dzp*prt%acoef(8)+dzp*dtp*prt%acoef(9)
+            ft=prt%acoef(1)+2.0*dtp*prt%acoef(4)+drp*prt%acoef(5)+dzp*prt%acoef(9)
+            ftt=2.0*prt%acoef(4)
+            ftr=drp*prt%acoef(5)
+            ftz=dzp*prt%acoef(9)
+            fr=prt%acoef(2)+dtp*prt%acoef(5)+2.0*drp*prt%acoef(6)+dzp*prt%acoef(7)
+            frt=prt%acoef(5)
+            frr=2.0*prt%acoef(6)
+            frz=prt%acoef(7)
+            fz=prt%acoef(3)+drp*prt%acoef(7)+2.0*dzp*prt%acoef(8)+dtp*prt%acoef(9)
+            fzt=prt%acoef(9)
+            fzr=prt%acoef(7)
+            fzz=2.0*prt%acoef(8)
     
-             fx=dcos(theta)*fr-sin(theta)*ft/msh%rm(ir)
-             fy=dsin(theta)*fr+cos(theta)*ft/msh%rc(ir)
-          enddo
+            sn=dsin(theta)
+            sn2=dsin(2.0*theta)
+            cs=dcos(theta)
+            cs2=dcos(2.0*theta)
+            FI=(/ ft, fr, fz, ftt, ftr, ftz, frt, frr, frz, fzt, fzr, fzz /)
+            if (ip.eq.1) write (*,*) 'particle transf c ff',ivar,f,y0(ivar)
+            M(1,1:12)= (/    -sn/r,      cs,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(2,1:12)= (/     cs/r,      sn,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(3,1:12)= (/     0.d0,    0.d0,1.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(4,1:12)= (/ sn2/r**2, sn*sn/r,0.d0, sn*sn/r**2,-cs*sn/r,0.d0,-cs*sn/r, cs*cs,0.d0, 0.d0,0.d0,0.d0 /)
+            M(5,1:12)= (/-cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2,-sn*sn/r,0.d0, cs*cs/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(6,1:12)= (/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,-sn/r,   0.d0,  0.d0,  cs, 0.d0,0.d0,0.d0 /)
+            M(7,1:12)= (/-cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2, cs*cs/r,0.d0,-sn*sn/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(8,1:12)= (/-sn2/r**2, cs*cs/r,0.d0, cs*cs/r**2, cs*sn/r,0.d0, cs*sn/r, sn*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(9,1:12)= (/     0.d0,    0.d0,0.d0,       0.d0,    0.d0, cs/r,   0.d0,  0.d0,  sn, 0.d0,0.d0,0.d0 /)
+            M(10,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0,-sn/r,  cs,0.d0 /)
+            M(11,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, cs/r,  sn,0.d0 /)
+            M(12,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,1.d0 /)
+            if (ip.eq.12) write (*,*) 'particle transf 3',M
+            if (ip.eq.12) write (*,*) 'particle 12 ff',f,r,theta
+            ff(ivar)=f
+            do id=1,3
+              dff(ivar,id)=0.d0
+              do im=1,12
+                dff(ivar,id)=dff(ivar,id)+M(id,im)*FI(im)
+              enddo
+            enddo
+            do id1=1,3
+              do id2=1,3
+                ddff(ivar,id1,id2)=0.d0
+                do im=1,12
+                  ddff(ivar,id1,id2)=ddff(ivar,id1,id2)+M(3+id1+3*(id2-1),im)*FI(im)
+                enddo
+              enddo
+            enddo
+            prt%vel(1)=ff(2)*dcos(theta)-ff(1)*dsin(theta)
+            prt%vel(2)=ff(2)*dsin(theta)+ff(1)*dcos(theta)
+            prt%vel(3)=ff(3)
+
+            if (ip.eq.1) write (*,*) 'particle u,v,w', prt%vel(1),prt%vel(2),prt%vel(3)
+            do id=1,3
+              prt%dvel(1,id)=dff(2,id)*dcos(theta)-dff(1,id)*dsin(theta)
+              prt%dvel(2,id)=dff(2,id)*dsin(theta)+dff(1,id)*dcos(theta)
+              prt%dvel(3,id)=dff(3,id)
+            enddo
+            if (ip.eq.1) write (*,*) 'particle du,dv,dw', prt%dvel(1,id)
+            if (ip.eq.1) write (*,*) 'particle du,dv,dw', prt%dvel(2,id)
+            if (ip.eq.1) write (*,*) 'particle du,dv,dw', prt%dvel(3,id)
+            do id1=1,3
+              do id2=1,3
+                prt%ddvel(1,id1,id2)=ddff(2,id1,id2)*dcos(theta)-ddff(1,id1,id2)*dsin(theta)
+                prt%ddvel(2,id1,id2)=ddff(2,id1,id2)*dsin(theta)+ddff(1,id1,id2)*dcos(theta)
+                prt%ddvel(3,id1,id2)=ddff(3,id1,id2)
+              enddo
+            enddo
+          endif
+        enddo
+
+           
     
-          prt%vel(1)=ur*dcos(theta)-ut*dsin(theta)
-          prt%vel(2)=ur*dsin(theta)+ut*dcos(theta)
-          prt%vel(3)=uz
+            prt%vel(1)=ur*dcos(theta)-ut*dsin(theta)
+            prt%vel(2)=ur*dsin(theta)+ut*dcos(theta)
+            prt%vel(3)=uz
           ! 2D problem
           !prt%vel(1)=ur
           !prt%vel(2)=0.d0
