@@ -69,7 +69,6 @@ program main
   var%su%dq2=0.0
   var%su%dq3=0.0
 
-  call init_part(var%prt,var%msh)
 !!  call ffemexport(var,0)
   call iterate(var)                                     ;  call verbose(var,"iterate      ")
  

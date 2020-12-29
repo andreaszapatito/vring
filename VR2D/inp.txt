@@ -13,7 +13,7 @@ poisson              fftp
  
 ===Para===
 dt                   0.001
-totstp           100000
+totstp           10000
 expstp           1000
 anlstp           1000 
 restrt              0

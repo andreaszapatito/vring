@@ -8,6 +8,9 @@ module part_type
     real(kind=8), allocatable      :: u(:,:), ddt(:,:), v(:,:),inflow(:,:)
     real(kind=8), allocatable      :: send_buff(:),recv_buff(:)
     real(kind=8), dimension(3)     :: vel
+    real(kind=8), dimension(3,3)   :: dvel
+    real(kind=8), dimension(3,3,3) :: ddvel
+    
     real(kind=8), dimension(3,3)   :: du
     real(kind=8), dimension(3,3,3) :: ddu
     real(kind=8), dimension(3,3)   :: jac, jrt
@@ -30,8 +33,9 @@ module part_type
     integer      :: ipos, ivel, ijac,ijrt,ihes,ihrt
     integer      :: jtme, jcon, jid
     integer      :: nitr
-    integer      :: nprcl
+    real(kind=8) :: nprcl
     integer      :: inj
+    integer      :: expstp
     integer      :: nee,nww,nss,nnn,nne,nnw,nse,nsw,ndl
 
     integer, allocatable   :: isfre(:),ifree(:),iee(:),iww(:),iss(:),inn(:),ine(:),inw(:),ise(:),isw(:),idl(:)
@@ -94,20 +98,22 @@ module part_tools
 
     integer          :: n,ir,it,ip,ipnew
     do ir=1,msh%nr
-!    do ir=1,1
+!    do ir=16,16
       if (msh%rc(ir)<par%r0.and.com%ip_a(3)==0) then
         a=msh%dtheta*(msh%rc(ir+1)**2-msh%rc(ir)**2)
         do it=1,msh%ntheta
 !        do it=1,1
-          ut=su%q1(it,ir,1)
-          ur=su%q2(it,ir,1)/msh%rm(ir)
-          ut=0.d0
-          ur=0.d0
-          uz=su%q3(it,ir,1)
+          ut=su%q1(it,ir,32)
+          ur=su%q2(it,ir,32)/msh%rm(ir)
+!          ut=0.d0
+!          ur=0.d0
+          uz=su%q3(it,ir,32)
 
-          prt%inflow(it,ir)=prt%inflow(it,ir)+(prt%c*a*su%q3(it,ir,1)*par%dt*prt%inj/float(prt%nprcl))
+          prt%inflow(it,ir)=prt%inflow(it,ir)+(prt%c*a*su%q3(it,ir,32)*par%dt*float(prt%inj)/prt%nprcl)
           n=floor(prt%inflow(it,ir))
-          !write (*,*) "injection",n,it,ir,prt%inflow(it,ir),prt%c,a,su%q3(it,ir,2),prt%inj,prt%nprcl
+          n=1
+        !  if (ir==8.and.it==1) write (*,*) "injection",n,it,ir,prt%inflow(it,ir),prt%c,a,su%q3(it,ir,2),prt%inj,prt%nprcl
+         ! write (*,*) "injection",n,it,ir,prt%inflow(it,ir),prt%c,a,su%q3(it,ir,2),prt%inj,prt%nprcl
           prt%inflow(it,ir)=prt%inflow(it,ir)-float(n)
           
           do ip=1,n
@@ -139,7 +145,7 @@ module part_tools
     integer          :: ip,it,icall
     it=0
     prt%npart=prt%npart+1
-    if (it==0) prt%tpart=prt%tpart+1
+    if (it==1) prt%tpart=prt%npart+1
     if (prt%nfree>0) then
             ip=prt%ifree(prt%nfree)
             prt%isfre(ip)=0
@@ -167,7 +173,11 @@ module part_tools
     prt%u(ip,5)=v
     prt%u(ip,6)=w
 
-    prt%v(ip,prt%jid)=float(prt%tpart)
+    prt%u(ip,prt%ijac+1)=1.0
+    prt%u(ip,prt%ijac+5)=1.0
+    prt%u(ip,prt%ijac+9)=1.0
+
+    prt%v(ip,prt%jid)=float(prt%npart)
     prt%v(ip,prt%jtme)=0.0
     prt%v(ip,prt%jcon)=c
   end subroutine injc_part
@@ -202,6 +212,7 @@ module part_tools
 
   subroutine init_part(prt,msh)
     implicit none
+    save
     type(part)       :: prt
     type(mesh_a)     :: msh
 
@@ -222,9 +233,10 @@ module part_tools
     prt%nfree=0
     prt%nlast=0
     prt%st=0.1d0
-    prt%c=1000.d0
-    prt%nprcl=1
+    prt%c=1000.0*1000.0*0.02**3
+    prt%nprcl=0.01
     prt%inj=10
+    prt%expstp=1
     prt%jtme=1
     prt%jcon=2
     prt%jid=3
@@ -242,36 +254,33 @@ module part_tools
     dy=msh%dr
     dz=msh%dz
     prt%acoef(:)=0.d0
-
-    prt%xint=reshape(              &
-             (/  -dx,  -dy,  -dz , &
-                0.d0,  -dy,  -dz , &
-                  dx,  -dy,  -dz , &
-                 -dx, 0.d0,  -dz , &
-                0.d0, 0.d0,  -dz , &
-                  dx, 0.d0,  -dz , &
-                 -dx,   dy,  -dz , &
-                0.d0,   dy,  -dz , &
-                  dx,   dy,  -dz , &
-                 -dx,  -dy, 0.d0 , &
-                0.d0,  -dy, 0.d0 , &
-                  dx,  -dy, 0.d0 , &
-                 -dx, 0.d0, 0.d0 , &
-                0.d0, 0.d0, 0.d0 , &
-                  dx, 0.d0, 0.d0 , &
-                 -dx,   dy, 0.d0 , &
-                0.d0,   dy, 0.d0 , &
-                  dx,   dy, 0.d0 , &
-                 -dx,  -dy,   dz , &
-                0.d0,  -dy,   dz , &
-                  dx,  -dy,   dz , &
-                 -dx, 0.d0,   dz , &
-                0.d0, 0.d0,   dz , &
-                  dx, 0.d0,   dz , &
-                 -dx,   dy,   dz , &
-                0.d0,   dy,   dz , &
-                  dx,   dy,   dz   &
-             /),(/27,3/))
+    prt%xint( 1,:)= (/  -dx,  -dy,  -dz /)
+    prt%xint( 2,:)= (/ 0.d0,  -dy,  -dz /)
+    prt%xint( 3,:)= (/   dx,  -dy,  -dz /)
+    prt%xint( 4,:)= (/  -dx, 0.d0,  -dz /)
+    prt%xint( 5,:)= (/ 0.d0, 0.d0,  -dz /)
+    prt%xint( 6,:)= (/   dx, 0.d0,  -dz /)
+    prt%xint( 7,:)= (/  -dx,   dy,  -dz /)
+    prt%xint( 8,:)= (/ 0.d0,   dy,  -dz /)
+    prt%xint( 9,:)= (/   dx,   dy,  -dz /)
+    prt%xint(10,:)= (/  -dx,  -dy, 0.d0 /)
+    prt%xint(11,:)= (/ 0.d0,  -dy, 0.d0 /)
+    prt%xint(12,:)= (/   dx,  -dy, 0.d0 /)
+    prt%xint(13,:)= (/  -dx, 0.d0, 0.d0 /)
+    prt%xint(14,:)= (/ 0.d0, 0.d0, 0.d0 /)
+    prt%xint(15,:)= (/   dx, 0.d0, 0.d0 /)
+    prt%xint(16,:)= (/  -dx,   dy, 0.d0 /)
+    prt%xint(17,:)= (/ 0.d0,   dy, 0.d0 /)
+    prt%xint(18,:)= (/   dx,   dy, 0.d0 /)
+    prt%xint(19,:)= (/  -dx,  -dy,   dz /)
+    prt%xint(20,:)= (/ 0.d0,  -dy,   dz /)
+    prt%xint(21,:)= (/   dx,  -dy,   dz /)
+    prt%xint(22,:)= (/  -dx, 0.d0,   dz /)
+    prt%xint(23,:)= (/ 0.d0, 0.d0,   dz /)
+    prt%xint(24,:)= (/   dx, 0.d0,   dz /)
+    prt%xint(25,:)= (/  -dx,   dy,   dz /)
+    prt%xint(26,:)= (/ 0.d0,   dy,   dz /)
+    prt%xint(27,:)= (/   dx,   dy,   dz /)
 
     prt%mint(1,:)= (/ &
     -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx), -(1.d0/(18.d0*dx)), 0.d0, 1.d0/(18.d0*dx)  & 
@@ -340,10 +349,13 @@ module part_tools
     integer :: iint
     integer :: irc,izc
     integer :: irof,itof,izof
-    integer :: iv,ivar
+    integer :: iv,ivar,ii
+    integer :: id,id1,id2,im
     integer :: idir,isde,isd1,isd2,ierr,tag,nspart,nrpart,ipnew,itask
     integer, dimension(MPI_STATUS_SIZE) :: status
     real(kind=8) :: dt
+    real(kind=8) :: y0(3)
+
     real(kind=8) :: x,y,z,r,theta,ut,ur,uz
     real(kind=8) :: tp
     real(kind=8) :: sumj,sumh
@@ -352,6 +364,10 @@ module part_tools
     real(kind=8) :: ft,ftt,ftr,ftz
     real(kind=8) :: fr,frt,frr,frz
     real(kind=8) :: fz,fzt,fzr,fzz
+    real(kind=8) :: sn,sn2,cs,cs2
+    real(kind=8) :: ff(3),dff(3,3),ddff(3,3,3)
+    real(kind=8) :: M(12,12),FI(12)
+
 
     character(len=8)          :: fmt5 ! format descriptor
     character(5)              :: timechar
@@ -381,7 +397,7 @@ module part_tools
 !      enddo
 !    endif
 
-    if (mod((par%nstep),par%expstp).eq.0) then
+    if (mod((par%nstep),prt%expstp).eq.0) then
       fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
       write (timechar,fmt5) par%nstep
       do itask=0,com%np-1
@@ -389,12 +405,12 @@ module part_tools
           if (itask.eq.0) then 
             open (unit=22+com%ip,file="part"//trim(timechar)//".dat", form='formatted', position='rewind')
             write (22,*) 'title = "particles"'
-            write (22,*) 'variables = "xp", "yp", "zp", "up", "vp", "wp" '
+            write (22,"(A10,100(A10,I2.2))") 'variables = "id", "time", "c",',(('u',ii),ii=1,prt%nvar)
           endif
           if (itask.ne.0) open (unit=22,file="part"//trim(timechar)//".dat", form='formatted', position='append')
           do ip=1,prt%nlast
             if (prt%isfre(ip)==0) then
-              write (22,*) prt%v(ip,1),prt%v(ip,2),prt%v(ip,3),prt%u(ip,1),prt%u(ip,2),prt%u(ip,3),prt%u(ip,4),prt%u(ip,5),prt%u(ip,6)
+              write (22,"(100(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar)
             endif
           enddo
           close (22)
@@ -443,104 +459,201 @@ module part_tools
         elseif (x.ge.0.d0.and.y.lt.0.d0) then  
           theta=dacos(-x/r)+4.0*datan(1.d0)
         endif  
-             
-        it=floor(theta/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
-        ir=floor(r/msh%dr)+1-com%ip_a(2)*msh%nr
-        iz=floor(z/msh%dz)+1-com%ip_a(3)*msh%nz
-        !write(*,*) x,y,z,it,ir,iz,theta,msh%dtheta,com%ip_a(1),msh%ntheta
-        if (it.ge.1.and.it.le.msh%ntheta.and.ir.ge.1.and.ir.le.msh%nr.and.iz.ge.1.and.iz.le.msh%nz) then 
-          ut=su%q1(it,ir,iz)
-          ur=su%q2(it,ir,iz)/msh%rm(ir)
-          uz=su%q3(it,ir,iz)
-          irc=0
-          izc=0
+!        write (*,*) "Station 1",ip,x,y,z,r,theta
+        do ivar=1,3
+          if (ivar==1) then
+            it=nint(theta/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+            if (msh%ntheta.eq.1) it=1
+            ir=nint((r-0.5*msh%dr)/msh%dr)+1-com%ip_a(2)*msh%nr
+            iz=nint((z-0.5*msh%dz)/msh%dz)+1-com%ip_a(3)*msh%nz
+          endif
+
+          if (ivar==2) then
+            it=nint((theta-0.5*msh%dtheta)/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+            if (msh%ntheta.eq.1) it=1
+            ir=nint(r/msh%dr)+1-com%ip_a(2)*msh%nr
+            iz=nint((z-0.5*msh%dz)/msh%dz)+1-com%ip_a(3)*msh%nz
+          endif
+
+          if (ivar==3) then
+            it=nint((theta-0.5*msh%dtheta)/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
+            if (msh%ntheta.eq.1) it=1
+            ir=nint((r-0.5*msh%dr)/msh%dr)+1-com%ip_a(2)*msh%nr
+            iz=nint(z/msh%dz)+1-com%ip_a(3)*msh%nz
+          endif
+
+!          write (*,*) "Station 2",ip,ivar,it,ir,iz
+
+
+          if (it.ge.1.and.it.le.msh%ntheta.and.ir.ge.1.and.ir.le.msh%nr.and.iz.ge.1.and.iz.le.msh%nz) then 
+            irc=0
+            izc=0
     
-          if (ir.ge.msh%nr) irc=-1
-          if (ir.le.1) irc=1
-          if (iz.ge.msh%nz) izc=-1
-          if (iz.le.1) izc=1
+            if (ir.ge.msh%nr) irc=-1
+            if (ir.le.1) irc=1
+            if (iz.ge.msh%nz) izc=-1
+            if (iz.le.1) izc=1
     
+!          write (*,*) "Station 3",ip,ivar,it,ir,iz
           
-          do ifst1=-1,1,1
-            do ifst2=-1,1,1
-              do ifst3=-1,1,1
-                 iv=1+(ifst1+1)+3*(ifst2+1)+9*(ifst3+1)
-                 itof=it+ifst1
-                 if (itof.gt.msh%ntheta) itof=1
-                 if (itof.lt.1) itof=msh%ntheta
-                 irof=ir+ifst2+irc
-                 izof=iz+ifst3+izc
-                 
-                 prt%yint(iv,1)=su%q1(itof,irof,izof)
-                 prt%yint(iv,2)=su%q2(itof,irof,izof)/msh%rc(irof)
-                 prt%yint(iv,3)=su%q3(itof,irof,izof)
+            do ifst1=-1,1,1
+              do ifst2=-1,1,1
+                do ifst3=-1,1,1
+                   iv=1+(ifst1+1)+3*(ifst2+1)+9*(ifst3+1)
+                   itof=it+ifst1
+                   if (itof.gt.msh%ntheta) itof=1
+                   if (itof.lt.1) itof=msh%ntheta
+                   irof=ir+ifst2+irc
+                   izof=iz+ifst3+izc
+                   
+                   prt%yint(iv,1)=su%q1(itof,irof,izof)
+                   prt%yint(iv,2)=su%q2(itof,irof,izof)/msh%rc(irof)
+                   prt%yint(iv,3)=su%q3(itof,irof,izof)
+                   prt%yint(iv,1)=float(izof)+float(irof)
+                   prt%yint(iv,2)=float(irof)+float(izof)
+                   prt%yint(iv,3)=1.0
+                enddo
               enddo
             enddo
-          enddo
-          do ivar=1,3
+
+            y0(ivar)=prt%yint(14,ivar)
+            do iv=1,27
+              prt%yint(iv,ivar)=prt%yint(iv,ivar)-y0(ivar)
+            enddo
+!            write (*,*) "Station 4",ip,ivar,it,ir,iz,prt%yint(1:27,ivar)+y0(ivar)
+            prt%acoef(:)=0.d0
             do iint=1,prt%nitr
               call interpolation (prt%xint,prt%acoef,prt%rint)
-              prt%mp=-matmul(prt%mint,prt%rint-prt%yint(:,ivar))
-              prt%acoef=prt%acoef-prt%mp
+              do i=1,9
+                prt%mp(i)=0.0
+                do k=1,27
+                  prt%mp(i)=prt%mp(i)-prt%mint(i,k)*(prt%rint(k)-prt%yint(k,ivar))
+                enddo
+!                write (*,*) "Station 4 A",ip,ivar,i,prt%mint(i,:),prt%mp(i)
+              enddo
+              do i=1,9
+                prt%acoef(i)=prt%acoef(i)+prt%mp(i)
+              enddo
+                if (ip.eq.1) write (*,*) 'particle acoef interp step',iint,prt%acoef(:),norm2(prt%mp)
               if (norm2(prt%mp).lt.0.000001) exit
             enddo
-          
-            if (ivar.eq.1) then
-              dtp=theta-msh%thc(it)
-              drp=r-msh%rm(it)
-              dzp=z-msh%zm(it)
-            endif
-              
-            if (ivar.eq.2) then
-              dtp=theta-msh%thm(it)
-              drp=r-msh%rc(it)
-              dzp=z-msh%zm(it)
-            endif
-              
-            if (ivar.eq.3) then
-              dtp=theta-msh%thm(it)
-              drp=r-msh%rm(it)
-              dzp=z-msh%zc(it)
-            endif
+
+
+
             if (dtp.gt.8.d0*datan(1.d0)) dtp=dtp-8.d0*datan(1.d0)
             if (dtp.lt.-8.d0*datan(1.d0)) dtp=dtp+8.d0*datan(1.d0)
-             f=dtp*prt%acoef(1)+drp*prt%acoef(2)+dzp*prt%acoef(3)+dtp*dtp*prt%acoef(4)+dtp*drp*prt%acoef(5)+drp*drp*prt%acoef(6)+drp*dzp*prt%acoef(7)+dzp*dzp*prt%acoef(8)+dzp*dtp*prt%acoef(9)
-             ft=prt%acoef(1)+2.0*dtp*prt%acoef(4)+drp*prt%acoef(5)+dzp*prt%acoef(9)
-             ftt=2.0*prt%acoef(4)
-             ftr=drp*prt%acoef(5)
-             ftz=dzp*prt%acoef(9)
-             fr=prt%acoef(2)+dtp*prt%acoef(5)+2.0*drp*prt%acoef(6)+dzp*prt%acoef(7)
-             frt=prt%acoef(5)
-             frr=2.0*prt%acoef(6)
-             frz=prt%acoef(7)
-             fz=prt%acoef(3)+drp*prt%acoef(7)+2.0*dzp*prt%acoef(8)+dtp*prt%acoef(9)
-             fzt=prt%acoef(9)
-             fzr=prt%acoef(7)
-             fzz=2.0*prt%acoef(8)
-    
-             fx=dcos(theta)*fr-sin(theta)*ft/msh%rm(ir)
-             fy=dsin(theta)*fr+cos(theta)*ft/msh%rc(ir)
+
+
+            if (ivar.eq.1) then
+              dtp=theta-msh%thc(it)
+              drp=r-msh%rm(ir)
+              dzp=z-msh%zm(iz)
+            endif
+
+            if (ivar.eq.2) then
+              dtp=theta-msh%thm(it)
+              drp=r-msh%rc(ir)
+              dzp=z-msh%zm(iz)
+            endif
+
+            if (ivar.eq.3) then
+              dtp=theta-msh%thm(it)
+              drp=r-msh%rm(ir)
+              dzp=z-msh%zc(iz)
+            endif
+            if (ip.eq.1) write (*,*) 'particle transf 1',dtp,drp,dzp,theta-msh%thc(it)
+            if (dtp.gt.msh%dtheta) dtp=dtp-8.d0*datan(1.d0)
+            if (dtp.lt.-msh%dtheta) dtp=dtp+8.d0*datan(1.d0)
+            if (ip.eq.1) write (*,*) 'particle transf 2',dtp,drp,dzp
+            if (ip.eq.1) write (*,*) 'particle acoef 2',prt%acoef(:)
+            f=dtp*prt%acoef(1)+drp*prt%acoef(2)+dzp*prt%acoef(3)+dtp*dtp*prt%acoef(4)+dtp*drp*prt%acoef(5)+drp*drp*prt%acoef(6)+drp*dzp*prt%acoef(7)+dzp*dzp*prt%acoef(8)+dzp*dtp*prt%acoef(9)+y0(ivar)
+
+
+            ft=prt%acoef(1)+2.0*dtp*prt%acoef(4)+drp*prt%acoef(5)+dzp*prt%acoef(9)
+            ftt=2.0*prt%acoef(4)
+            ftr=drp*prt%acoef(5)
+            ftz=dzp*prt%acoef(9)
+            fr=prt%acoef(2)+dtp*prt%acoef(5)+2.0*drp*prt%acoef(6)+dzp*prt%acoef(7)
+            frt=prt%acoef(5)
+            frr=2.0*prt%acoef(6)
+            frz=prt%acoef(7)
+            fz=prt%acoef(3)+drp*prt%acoef(7)+2.0*dzp*prt%acoef(8)+dtp*prt%acoef(9)
+            fzt=prt%acoef(9)
+            fzr=prt%acoef(7)
+            fzz=2.0*prt%acoef(8)
+
+            sn=dsin(theta)
+            sn2=dsin(2.0*theta)
+            cs=dcos(theta)
+            cs2=dcos(2.0*theta)
+            FI=(/ ft, fr, fz, ftt, ftr, ftz, frt, frr, frz, fzt, fzr, fzz /)
+            if (ip.eq.1) write (*,*) 'particle transf c ff',ivar,f,y0(ivar)
+            M(1,1:12)= (/    -sn/r,      cs,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(2,1:12)= (/     cs/r,      sn,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(3,1:12)= (/     0.d0,    0.d0,1.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(4,1:12)= (/ sn2/r**2, sn*sn/r,0.d0, sn*sn/r**2,-cs*sn/r,0.d0,-cs*sn/r, cs*cs,0.d0, 0.d0,0.d0,0.d0 /)
+            M(5,1:12)= (/-cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2,-sn*sn/r,0.d0, cs*cs/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(6,1:12)= (/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,-sn/r,   0.d0,  0.d0,  cs, 0.d0,0.d0,0.d0 /)
+            M(7,1:12)= (/-cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2, cs*cs/r,0.d0,-sn*sn/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(8,1:12)= (/-sn2/r**2, cs*cs/r,0.d0, cs*cs/r**2, cs*sn/r,0.d0, cs*sn/r, sn*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(9,1:12)= (/     0.d0,    0.d0,0.d0,       0.d0,    0.d0, cs/r,   0.d0,  0.d0,  sn, 0.d0,0.d0,0.d0 /)
+            M(10,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0,-sn/r,  cs,0.d0 /)
+            M(11,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, cs/r,  sn,0.d0 /)
+            M(12,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,1.d0 /)
+            if (ip.eq.12) write (*,*) 'particle transf 3',M
+            if (ip.eq.12) write (*,*) 'particle 12 ff',f,r,theta
+            ff(ivar)=f
+            do id=1,3
+              dff(ivar,id)=0.d0
+              do im=1,12
+                dff(ivar,id)=dff(ivar,id)+M(id,im)*FI(im)
+              enddo
+            enddo
+            do id1=1,3
+              do id2=1,3
+                ddff(ivar,id1,id2)=0.d0
+                do im=1,12
+                  ddff(ivar,id1,id2)=ddff(ivar,id1,id2)+M(3+id1+3*(id2-1),im)*FI(im)
+                enddo
+              enddo
+            enddo
+          else
+            ff(ivar)=0.d0
+          endif
+        enddo
+
+        prt%vel(1)=ff(2)*dcos(theta)-ff(1)*dsin(theta)
+        prt%vel(2)=ff(2)*dsin(theta)+ff(1)*dcos(theta)
+        prt%vel(3)=ff(3)
+        do id=1,3
+          prt%dvel(1,id)=dff(2,id)*dcos(theta)-dff(1,id)*dsin(theta)
+          prt%dvel(2,id)=dff(2,id)*dsin(theta)+dff(1,id)*dcos(theta)
+          prt%dvel(3,id)=dff(3,id)
+        enddo
+        if (ip.eq.1) write (*,*) 'particle du,dv,dw', prt%dvel(1,id)
+        if (ip.eq.1) write (*,*) 'particle du,dv,dw', prt%dvel(2,id)
+        if (ip.eq.1) write (*,*) 'particle du,dv,dw', prt%dvel(3,id)
+        do id1=1,3
+          do id2=1,3
+            prt%ddvel(1,id1,id2)=ddff(2,id1,id2)*dcos(theta)-ddff(1,id1,id2)*dsin(theta)
+            prt%ddvel(2,id1,id2)=ddff(2,id1,id2)*dsin(theta)+ddff(1,id1,id2)*dcos(theta)
+            prt%ddvel(3,id1,id2)=ddff(3,id1,id2)
           enddo
-    
-          prt%vel(1)=ur*dcos(theta)-ut*dsin(theta)
-          prt%vel(2)=ur*dsin(theta)+ut*dcos(theta)
-          prt%vel(3)=uz
-          ! 2D problem
-          !prt%vel(1)=ur
-          !prt%vel(2)=0.d0
-          !prt%vel(3)=uz
-        else
-          !write (*,*) "Particle ",ip,"out"
-          prt%vel(1)=0.d0
-          prt%vel(2)=0.d0
-          prt%vel(3)=0.d0
-        endif
-        !prt%du(1,1)=(su%q1(it+1,ir,iz)-su%q1(it-1,ir,iz))/(msh%dtheta*msh%rm(ir)*2.0)
-        prt%du(:,:)=0.d0
-        prt%ddu(:,:,:)=0.d0
-!        prt%u(ip,prt%ivel+1)=0.0
-!        prt%u(ip,prt%ivel+2)=0.0
-!        prt%u(ip,prt%ivel+3)=1.0
+        enddo
+        do i=1,3
+          prt%ddt(ip,prt%ipos+i)=prt%u(ip,prt%ivel+i)
+          prt%ddt(ip,prt%ivel+i)=(1.0/prt%st)*(prt%vel(i)-prt%u(ip,prt%ivel+i))
+        enddo
+        do i=1,3
+          do j=1,3
+            prt%jac(i,j)=prt%u(ip,prt%ijac+i+3*j-3)
+            prt%jrt(i,j)=prt%u(ip,prt%ijrt+i+3*j-3)
+            do k=1,3
+              prt%hes(i,j,k)=prt%u(ip,prt%ihes+i+3*j-3+9*k-9)
+              prt%hrt(i,j,k)=prt%u(ip,prt%ihrt+i+3*j-3+9*k-9)
+            enddo
+          enddo
+        enddo
         do i=1,3
           prt%ddt(ip,prt%ipos+i)=prt%u(ip,prt%ivel+i)
           prt%ddt(ip,prt%ivel+i)=(1.0/prt%st)*(prt%vel(i)-prt%u(ip,prt%ivel+i))
@@ -562,12 +675,13 @@ module part_tools
             enddo
           enddo
         enddo
-        do i=1,6
+        do i=1,prt%nvar
           prt%u(ip,i)=prt%u(ip,i)+prt%ddt(ip,i)*par%dt
         enddo
         prt%v(ip,prt%jtme)=prt%v(ip,prt%jtme)+par%dt
       endif
     enddo
+
     do ip=1,prt%nlast
       if (prt%isfre(ip)==0) then
         x=prt%u(ip,prt%ipos+1)
@@ -589,7 +703,7 @@ module part_tools
         iz=floor(z/msh%dz)+1-com%ip_a(3)*msh%nz
 
         if ((z>msh%dzmax).or.(z<0.0).or.(r>msh%drmax).or.(r<0.0)) then
-          write (*,*) "Station out of bounds",ip,r,z
+!          write (*,*) "Station out of bounds",ip,r,z
           prt%ndl=prt%ndl+1
           prt%idl(prt%ndl)=ip
         else

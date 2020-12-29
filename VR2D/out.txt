@@ -9,7 +9,7 @@ zmax                  :      2.00000000      0.00390625      1.99609375
 Problem constants_____(cons)_
 solver                :
 Problem parameters____(para)_
-total steps           :        00100000
+total steps           :        00010000
 export every          :        00001000
 analys every          :        00001000
 restart               :        00000000

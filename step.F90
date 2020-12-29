@@ -399,7 +399,7 @@ module inverse
         
        uin=0.0
 !      if (var%par%ntime.gt.ts) uin=0.0
-       uot=uin*(1.0-var%msh%rc(jc)**2/1.0**2)*2.0*(0.2)**2
+!       uot=uin*(1.0-var%msh%rc(jc)**2/1.0**2)*2.0*(0.2)**2
        uin=0.0
 ! +0.5*(sin(2.0*pi*10.0*var%par%ntime/ts)-sin(10.0*2.0*pi*(var%par%ntime-dt)/ts))
 !      uin= (24.0*(var%par%ntime)**1.0 - 3.0*32.0*(var%par%ntime)**2.0)*var%par%dt
