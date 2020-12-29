@@ -459,6 +459,7 @@ module part_tools
         elseif (x.ge.0.d0.and.y.lt.0.d0) then  
           theta=dacos(-x/r)+4.0*datan(1.d0)
         endif  
+!        write (*,*) "Station 1",ip,x,y,z,r,theta
         do ivar=1,3
           if (ivar==1) then
             it=nint(theta/msh%dtheta)+1-com%ip_a(1)*msh%ntheta
@@ -481,6 +482,9 @@ module part_tools
             iz=nint(z/msh%dz)+1-com%ip_a(3)*msh%nz
           endif
 
+!          write (*,*) "Station 2",ip,ivar,it,ir,iz
+
+
           if (it.ge.1.and.it.le.msh%ntheta.and.ir.ge.1.and.ir.le.msh%nr.and.iz.ge.1.and.iz.le.msh%nz) then 
             irc=0
             izc=0
@@ -490,6 +494,8 @@ module part_tools
             if (iz.ge.msh%nz) izc=-1
             if (iz.le.1) izc=1
     
+!          write (*,*) "Station 3",ip,ivar,it,ir,iz
+          
             do ifst1=-1,1,1
               do ifst2=-1,1,1
                 do ifst3=-1,1,1
@@ -514,6 +520,7 @@ module part_tools
             do iv=1,27
               prt%yint(iv,ivar)=prt%yint(iv,ivar)-y0(ivar)
             enddo
+!            write (*,*) "Station 4",ip,ivar,it,ir,iz,prt%yint(1:27,ivar)+y0(ivar)
             prt%acoef(:)=0.d0
             do iint=1,prt%nitr
               call interpolation (prt%xint,prt%acoef,prt%rint)
@@ -522,6 +529,7 @@ module part_tools
                 do k=1,27
                   prt%mp(i)=prt%mp(i)-prt%mint(i,k)*(prt%rint(k)-prt%yint(k,ivar))
                 enddo
+!                write (*,*) "Station 4 A",ip,ivar,i,prt%mint(i,:),prt%mp(i)
               enddo
               do i=1,9
                 prt%acoef(i)=prt%acoef(i)+prt%mp(i)
@@ -573,6 +581,7 @@ module part_tools
             fzt=prt%acoef(9)
             fzr=prt%acoef(7)
             fzz=2.0*prt%acoef(8)
+
             sn=dsin(theta)
             sn2=dsin(2.0*theta)
             cs=dcos(theta)

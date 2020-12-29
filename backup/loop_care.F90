@@ -1,7 +1,8 @@
 module loop 
-!#include <petsc/finclude/petscdef.h>
+#include <petsc/finclude/petscdef.h>
 
-!  use petsc
+
+  use petsc
   use run_tools
   use cons_tools
   use para_tools
@@ -9,7 +10,6 @@ module loop
   use mesh_tools
   use solu_tools
   use solp_tools
-  use part_tools
 
   use poisson
   use poisson_solve
@@ -21,12 +21,11 @@ module loop
 
   use communicate
   implicit none
-!#include <mpif.h>
   contains
     subroutine iterate (var)
       implicit none
 
-      integer               :: ierr
+      PetscErrorCode        :: ierr
       integer               :: code
       integer               :: istep
       integer               :: irkstep
@@ -38,18 +37,14 @@ module loop
    
 
       var%con%timming0= MPI_Wtime()/60.0
-  call init_part(var%prt,var%msh)
 ! Time advancement loop start
-    do istep= 0,var%par%totstp
+    do istep= 1,var%par%totstp
 !      do istep= 1,1000
-!      call iter_part(var%prt,var%msh,var%com,var%su,var%par)
+
 ! Update timestep
         var%par%istep = istep
         var%par%nstep = istep+var%par%nstepi
         var%par%ntime = var%par%dt+var%par%ntime
-        write (*,*) var%par%nstep,var%prt%inj
-      if (mod(var%par%nstep,var%prt%inj)==0) call inlt_part(var%par,var%prt,var%msh,var%su,var%com)
-!      if (var%par%istep==0) call inlt_part(var%par,var%prt,var%msh,var%su,var%com)
 ! Non-solenoidal component
         var%con%timming1= MPI_Wtime()/60.0
 ! RK Loop start
@@ -102,8 +97,8 @@ module loop
           call laplace_solve(var%sp,var%com,var%msh,var%par)    ;  call verbose(var,"laplace_solve called")
           call communicateeq(var)
             
-!          call commq(var,var%sp%dph,3)
-!          call commq(var,var%sp%dph,2)
+          call commq(var,var%sp%dph,3)
+          call commq(var,var%sp%dph,2)
 
 
 ! poisson
@@ -119,23 +114,18 @@ module loop
 
 ! RK Loop end
 
-       var%con%timming2= MPI_Wtime()/60.0
-       var%con%timming3= MPI_Wtime()/60.0
-       if (mod((var%par%nstep),var%par%expstp).eq.0)   call restart_save(var);  call verbose(var,"export solve  called") 
+        var%con%timming2= MPI_Wtime()/60.0
+        var%con%timming3= MPI_Wtime()/60.0
+!        if (mod((var%par%istep-1),var%par%expstp).eq.0)   call restart_save(var);  call verbose(var,"export solve  called") 
 
-        if (mod((var%par%nstep),var%par%anlstp).eq.0) call analysis(var);  call verbose(var,"analysis called") 
-!        if (mod((var%par%nstep-1),var%par%expstp).eq.0) call ffemexport(var,1);  call verbose(var,"ffemexp  called") 
-!        if (mod((var%par%nstep-1),var%par%expstp).eq.0) call ffemexport(var,2);  call verbose(var,"ffemexp  called") 
-!        if (mod((var%par%nstep-1),var%par%expstp).eq.0) call ffemexport(var,3);  call verbose(var,"ffemexp  called") 
-!        if (mod((var%par%nstep-1),var%par%expstp).eq.0) call ffemexport(var,4);  call verbose(var,"ffemexp  called") 
-!        if (mod((var%par%nstep-1),var%par%expstp).eq.0) call ffemexport(var,5);  call verbose(var,"ffemexp  called") 
+        if (mod((var%par%istep-1),var%par%anlstp).eq.0) call analysis(var);  call verbose(var,"export solve  called") 
         if (var%com%ip.eq.0) then
           write (*,"(2a)") "__________________________________________"
           write (*,"(2a)") "::Step________::Time________::Residual____::Performance_::Partitioning"
           write (*,"(a,I10,3(a,F10.6),a,I10)") " I: ",var%par%nstepi, " I: ",var%par%ntimei, " M1:",var%sp%r1," TM:",var%con%timming2-var%con%timming1," TN:",var%com%np
           write (*,"(a,I10,3(a,F10.6),a,I10)") " R: ",var%par%nstep,  " R: ",var%par%ntime,  " M2:",var%sp%r2," TP:",var%con%timming3-var%con%timming2," TT:",var%com%np_a(1)
           write (*,"(a,I10,3(a,F10.6),a,I10)") " F: ",var%par%nstepf, " F: ",var%par%ntimef, " P1:",var%su%r1," TS:",var%con%timming3-var%con%timming1," TR:",var%com%np_a(2)
-          write (*,"(a,I10,3(a,F10.6),a,I10)") " E: ",var%par%expstp, " Dt:",var%par%dt,     " P2:",var%su%r2," TT:",(var%con%timming3-var%con%timming0)/float(istep)," TZ:",var%com%np_a(3)
+          write (*,"(a,I10,3(a,F10.6),a,I10)") " E: ",var%par%expstp, " Dt:",var%par%dt,     " P2:",var%su%r2," TT:",var%con%timming3-var%con%timming0," TZ:",var%com%np_a(3)
         endif
 
       enddo
@@ -143,7 +133,7 @@ module loop
      
       call mpi_barrier(var%com%comm_0, ierr)
     
-  !    call petscfinalize(ierr)
+      call petscfinalize(ierr)
   end subroutine iterate
 
 end module loop

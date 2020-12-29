@@ -12,7 +12,7 @@ Problem parameters____(para)_
 total steps           :        00004000
 export every          :        00001000
 analys every          :        00001000
-restart               :        00000000
+restart               :        00000001
 u1,v2,w3    nominal   :      0.00000000      0.00000000      0.00000000
 ur,wr,uf,kf nominal   :      0.00000000      0.00000000      0.00000000     16.00000000
 rw,r0,t0              :      1.00000000      0.50000000      5.00000000
