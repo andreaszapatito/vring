@@ -139,6 +139,7 @@ module gen_tools
               u=min(0.2,t*r)
               u=-0.1*4.0*r*r*sin(10.0*2.0*pi*t)*sin(5.0*2.0*pi*r/0.5)*cos(30.0*th)
             endif
+            !u=0.0
           end function  profilet
           function profiler(t,r,th) result(u)
             implicit none
@@ -152,6 +153,7 @@ module gen_tools
               u=0.1*4.0*r*r*sin(10.0*2.0*pi*t)*cos(5.0*2.0*pi*r/0.5)*sin(30.0*th)
             endif
 
+            !u=0.0
           end function  profiler
 
           function profile(t,r,th) result(u)

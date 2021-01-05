@@ -30,30 +30,39 @@ module loop
       integer               :: code
       integer               :: istep
       integer               :: irkstep
-
+      integer               :: id
+      integer               :: nparticles
       type(run)             :: var
 
       integer ic,jc,kc
 
-   
+      nparticles=6
 
+      allocate(var%prt(nparticles))
       var%con%timming0= MPI_Wtime()/60.0
-  call init_part(var%prt,var%msh)
+      do id=1,nparticles
+        call init_part(id,var%prt(id),var%msh,var%par)
+      enddo
 ! Time advancement loop start
     do istep= 0,var%par%totstp
 !      do istep= 1,1000
-!      call iter_part(var%prt,var%msh,var%com,var%su,var%par)
 ! Update timestep
         var%par%istep = istep
         var%par%nstep = istep+var%par%nstepi
         var%par%ntime = var%par%dt+var%par%ntime
-        write (*,*) var%par%nstep,var%prt%inj
-      if (mod(var%par%nstep,var%prt%inj)==0) call inlt_part(var%par,var%prt,var%msh,var%su,var%com)
-!      if (var%par%istep==0) call inlt_part(var%par,var%prt,var%msh,var%su,var%com)
+      do id=1,nparticles
+        write (*,*) 'inject',id,var%par%nstep,var%prt(id)%inj
+        if (mod(var%par%nstep,var%prt(id)%inj)==0) then
+                call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
+        endif
+      enddo
 ! Non-solenoidal component
         var%con%timming1= MPI_Wtime()/60.0
 ! RK Loop start
         do irkstep = 1,3 !var%par%nrkstep
+          do id=1,nparticles
+            call iter_part(irkstep,var%prt(id),var%msh,var%com,var%su,var%par)
+          enddo
           call communicateeq(var)
           var%par%irkstep = irkstep
           call ucoeff(var)  

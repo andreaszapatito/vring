@@ -62,6 +62,7 @@ program main
   call init_solp      (var%sp,var%msh)                  ;  call verbose(var,"init_solp called")
   call init_solu      (var%su,var%msh,var%par,var%com)  ;  call verbose(var,"init_solu called")
 
+
   if (var%par%restrt.eq.1) call restart_load (var);     ;  call verbose(var,"restart   called")
 
   call prep_poisson_solver(var)                         ;  call verbose(var,"prep_poisson_solver called")

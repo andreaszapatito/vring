@@ -3,8 +3,8 @@ dim                  3
 npth                 1     1    4
 
 ===Mesh===
-nx                   1   256  1024 
-maxr                 2
+nx                   1   512 2048
+maxr                 2 
 maxz                 8
  
 ===Flag===

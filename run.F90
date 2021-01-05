@@ -18,7 +18,7 @@ module run_type
     type (mesh_a):: msh
     type (solu)  :: su
     type (solp)  :: sp
-    type (part)  :: prt
+    type (part), allocatable :: prt(:)
   end type run
 end module run_type
 
