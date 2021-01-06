@@ -51,7 +51,7 @@ module loop
         var%par%nstep = istep+var%par%nstepi
         var%par%ntime = var%par%dt+var%par%ntime
       do id=1,nparticles
-        write (*,*) 'inject',id,var%par%nstep,var%prt(id)%inj
+!        write (*,*) 'inject',id,var%par%nstep,var%prt(id)%inj
         if (mod(var%par%nstep,var%prt(id)%inj)==0) then
                 call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
         endif

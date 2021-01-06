@@ -1,11 +1,11 @@
 ===Comm===      
 dim                  3
-npth                 1     1    4
+npth                 1     4    8
 
 ===Mesh===
-nx                   1    64   64
-maxr                 1
-maxz                 1
+nx                 513   512  1024
+maxr                 2
+maxz                 4
  
 ===Flag===
 poisson              fftp
@@ -13,18 +13,18 @@ poisson              fftp
  
 ===Para===
 dt                   0.001
-totstp           4000
-expstp           1000
-anlstp           1000 
-restrt              1
+totstp          50000
+expstp            500
+anlstp            500 
+restrt              0
 verbose              0
 u                    0.0
 v                    0.0
 w                    0.0
 w                    0.0   0.0  0.0 16.0
-rw.r0.rh             1.0   0.5  5.0 
+rw.r0.rh             1.5   0.5  5.0 
 p                    1.0
-Re                555.55
+Re                5555.5
 Pe                   1.0
 nrkstep              3
 slip                 0.0

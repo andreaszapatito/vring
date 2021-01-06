@@ -878,9 +878,9 @@ if (prt%id==8) nsubdt=1
         call MPI_BARRIER(com%comm_0,ierr)
       enddo
     enddo
-        call MPI_BARRIER(com%comm_0,ierr)
-    write (*,*) "A npart:",prt%npart," nlast:",prt%nlast," nfree",prt%nfree," ip ",com%ip
-        call MPI_BARRIER(com%comm_0,ierr)
+!        call MPI_BARRIER(com%comm_0,ierr)
+!    write (*,*) "A npart:",prt%npart," nlast:",prt%nlast," nfree",prt%nfree," ip ",com%ip
+!        call MPI_BARRIER(com%comm_0,ierr)
 
     do isd2=-1,1,2
       do isd1=-1,1,2
@@ -933,6 +933,7 @@ if (prt%id==8) nsubdt=1
       enddo
     enddo  
   endif
+  if (irk==3.and.isubdt==nsubdt)  write (*,*) "A npart:",prt%npart," nlast:",prt%nlast," nfree",prt%nfree," ip ",com%ip
   enddo
 end subroutine iter_part
 
