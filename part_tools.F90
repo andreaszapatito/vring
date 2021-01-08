@@ -25,6 +25,7 @@ module part_type
 
 ! Parameters
     integer      :: id
+    integer      :: nids
     integer      :: npart
     integer      :: tpart
     integer      :: nfree
@@ -155,11 +156,16 @@ module part_tools
             if (ip>prt%naloc) write (*,*) "icall", icall,x,y,z
             prt%isfre(ip)=0
     endif
-
+    if (icall==1) then
+            prt%nids=prt%nids+1
+            prt%v(ip,prt%jid)=float(prt%nids)
+            write (*,*) 'nids',prt%v(ip,prt%jid),prt%nids,ip,prt%nfree,prt%nlast,prt%npart
+    endif
 
 !    if (ip==0) write (*,*) 'ip is zero in injc',ip,prt%nfree,prt%nlast,prt%npart
     prt%u(ip,:)=0.0
-    prt%v(ip,:)=0.0
+    prt%v(ip,prt%jtme)=0.0
+    prt%v(ip,prt%jcon)=c
 
     prt%ddt(:,ip,:)=0.0
 
@@ -175,9 +181,6 @@ module part_tools
     prt%u(ip,prt%ijac+5)=1.0
     prt%u(ip,prt%ijac+9)=1.0
 
-    prt%v(ip,prt%jid)=float(prt%npart)
-    prt%v(ip,prt%jtme)=0.0
-    prt%v(ip,prt%jcon)=c
   end subroutine injc_part
 
   subroutine remv_part(ip,prt)
@@ -218,6 +221,7 @@ module part_tools
     integer          :: ip,ip1,id
 
     prt%id=id
+    prt%nids=0
 
     prt%ipos=0
     prt%ivel=3
@@ -235,7 +239,17 @@ module part_tools
     prt%nfree=0
     prt%nlast=0
 
-    prt%r=0.1*(10.0**(0.5*float(id-1)))*(10.0**(-6.0))/0.02
+    !prt%r=0.1*(10.0**(0.5*float(id-1)))*(10.0**(-6.0))/0.02
+    if(id==1)  prt%r=0.200*(10.0**(-6.0))/0.02
+    if(id==2)  prt%r=0.500*(10.0**(-6.0))/0.02
+    if(id==3)  prt%r=1.000*(10.0**(-6.0))/0.02
+    if(id==4)  prt%r=2.000*(10.0**(-6.0))/0.02
+    if(id==5)  prt%r=5.000*(10.0**(-6.0))/0.02
+    if(id==6)  prt%r=10.00*(10.0**(-6.0))/0.02
+    if(id==7)  prt%r=20.00*(10.0**(-6.0))/0.02
+    if(id==8)  prt%r=50.00*(10.0**(-6.0))/0.02
+    if(id==9)  prt%r=100.0*(10.0**(-6.0))/0.02
+    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
@@ -407,11 +421,11 @@ module part_tools
 !      enddo
 !    endif
 
+    fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
+    fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
+    write (timechar,fmt5) par%nstep
+    write (batchchar,fmt2) prt%id
     if (mod((par%nstep),prt%expstp).eq.0) then
-      fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
-      fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
-      write (timechar,fmt5) par%nstep
-      write (batchchar,fmt2) prt%id
       do itask=0,com%np-1
         if (com%ip==itask) then
           if (itask.eq.0) then 
@@ -439,28 +453,33 @@ module part_tools
       enddo
     endif
 
+    if (mod((par%nstep),prt%expstp).eq.0) then
+    do itask=0,com%np-1
+      if (com%ip==itask) then
+        open (unit=23,file="trajectory_size"//trim(batchchar)//".dat", form='formatted', position='append')
+        do ip=1,prt%nlast
+!          write (*,*) prt%nids,prt%v(ip,prt%jid)
+          if (prt%isfre(ip)==0.and.mod(prt%v(ip,prt%jid)-1.0,1000.0)<0.1) then
+            write (23,"(100(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
+          endif
+        enddo
+        write (23,"(100(E20.8))")
+        close (23)
+      endif
+      call MPI_BARRIER(com%comm_0,ierr)
+    enddo
+    endif
 
-!      do itask=0,com%np-1
-!        if (com%ip==itask) then
-!          open (unit=23,file="trajectory.dat", form='formatted', position='append')
-!          do ip=1,prt%npart
-!            if (prt%isfre(ip)==0) then
-!              write (23,*) com%ip,prt%v(ip,1),prt%v(ip,2),prt%v(ip,3),prt%u(ip,1),prt%u(ip,2),prt%u(ip,3),prt%u(ip,4),prt%u(ip,5),prt%u(ip,6)
-!            endif
-!          enddo
-!          close (23)
-!        endif
-!        call MPI_BARRIER(com%comm_0,ierr)
-!      enddo
-
-if (prt%id==1) nsubdt=50
-if (prt%id==2) nsubdt=20
-if (prt%id==3) nsubdt=10
-if (prt%id==4) nsubdt=5
-if (prt%id==5) nsubdt=2
-if (prt%id==6) nsubdt=1
-if (prt%id==7) nsubdt=1
-if (prt%id==8) nsubdt=1
+    if (prt%id==1) nsubdt=20
+    if (prt%id==2) nsubdt=20
+    if (prt%id==3) nsubdt=10
+    if (prt%id==4) nsubdt=10
+    if (prt%id==5) nsubdt=5
+    if (prt%id==6) nsubdt=5
+    if (prt%id==7) nsubdt=2
+    if (prt%id==8) nsubdt=2
+    if (prt%id==9) nsubdt=1
+    if (prt%id==10) nsubdt=1
 
   do isubdt=1,nsubdt
     partdt=par%dt/float(nsubdt)
@@ -864,7 +883,7 @@ if (prt%id==8) nsubdt=1
           do ip=1,nrpart
             tag = 1+ip
             call mpi_recv(prt%recv_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip_a(idir)-isde,tag,com%comm_a(idir),status,ierr)
-            call injc_part(prt%recv_buff(1),prt%recv_buff(2),prt%recv_buff(3),prt%c,prt%recv_buff(4),prt%recv_buff(5),prt%recv_buff(6),prt,ipnew,2)
+            call injc_part(0.d0,0.d0,0.d0,prt%c,0.d0,0.d0,0.d0,prt,ipnew,2)
             do iv=1,prt%nvar
               prt%u(ipnew,iv)=prt%recv_buff(iv)
             enddo

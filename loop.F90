@@ -36,7 +36,7 @@ module loop
 
       integer ic,jc,kc
 
-      nparticles=6
+      nparticles=10
 
       allocate(var%prt(nparticles))
       var%con%timming0= MPI_Wtime()/60.0
