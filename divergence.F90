@@ -254,7 +254,6 @@ module divergence
     do ic=1,var%msh%ntheta
       do jc=1,var%msh%nr
           var%sp%dph(ic,jc,var%msh%nzc)= var%sp%dph(ic,jc,var%msh%nz)
-          if (isnan(var%sp%dph(ic,jc,var%msh%nzc))) exit 
       enddo
     enddo
 
@@ -394,6 +393,7 @@ module divergence
       do jc=1,var%msh%nr
         do ic=1,var%msh%ntheta
           var%su%qcap(ic,jc,kc)=(var%sp%dph(ic,jc,kc)-var%sp%dph(ic,jc,kc-1))* var%msh%dx3
+          if (isnan(var%su%qcap(ic,jc,kc))) stop
         enddo
       enddo
     enddo

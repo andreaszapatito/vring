@@ -5,7 +5,7 @@ module part_type
   type :: part
 
 ! Data
-    real(kind=8), allocatable      :: u(:,:), ddt(:,:,:), v(:,:),inflow(:,:),d(:)
+    real(kind=8), allocatable      :: u(:,:), ddt(:,:,:), v(:,:),inflow(:),d(:)
     real(kind=8), allocatable      :: send_buff(:),recv_buff(:)
     real(kind=8), dimension(3)     :: vel
     real(kind=8), dimension(3,3)   :: dvel
@@ -74,7 +74,7 @@ module part_tools
     allocate(prt%v(prt%naloc,3))
     allocate(prt%ifree(prt%naloc))
     allocate(prt%isfre(prt%naloc))
-    allocate(prt%inflow(msh%ntheta,msh%nr))
+    allocate(prt%inflow(msh%nr))
 
     allocate(prt%iee(prt%naloc))
     allocate(prt%iww(prt%naloc))
@@ -111,12 +111,9 @@ module part_tools
           ur=0.d0
           uz=su%q3(it,ir,1)
   
-          prt%inflow(it,ir)=prt%inflow(it,ir)+(prt%c*a*su%q3(it,ir,1)*par%dt*float(prt%inj)/prt%nprcl)
-          n=floor(prt%inflow(it,ir))
- !         n=1
-        !  if (ir==8.and.it==1) write (*,*) "injection",n,it,ir,prt%inflow(it,ir),prt%c,a,su%q3(it,ir,2),prt%inj,prt%nprcl
-         ! write (*,*) "injection",n,it,ir,prt%inflow(it,ir),prt%c,a,su%q3(it,ir,2),prt%inj,prt%nprcl
-          prt%inflow(it,ir)=prt%inflow(it,ir)-float(n)
+          prt%inflow(ir)=prt%inflow(ir)+(prt%c*a*su%q3(it,ir,1)*par%dt*float(prt%inj)/prt%nprcl)
+          n=floor(prt%inflow(ir))
+          prt%inflow(ir)=prt%inflow(ir)-float(n)
           
           do ip=1,n
             call random_number(inpos)
@@ -130,9 +127,7 @@ module part_tools
             u=ur*dcos(t)-ut*dsin(t)
             v=ur*dsin(t)+ut*dcos(t)
             w=uz
-!            if (prt%id==1) write (*,*) 'injecting',prt%id,prt%npart,prt%inj,n,x,y,z
             call injc_part(x,y,z,prt%c,u,v,w,prt,ipnew,1)
-
           enddo
         enddo
       endif
@@ -243,7 +238,7 @@ module part_tools
     prt%r=0.1*(10.0**(0.5*float(id-1)))*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
-    prt%c=1000.0*1000.0*0.02**3
+    prt%c=(10.0**6)*(0.02**3)
     prt%nprcl=0.001
     prt%inj=10
     prt%expstp=100
@@ -256,7 +251,7 @@ module part_tools
     prt%ddt(:,:,:)=0.d0
     prt%ifree(:)=0
     prt%isfre(:)=0
-    prt%inflow(:,:)=0.d0
+    prt%inflow(:)=0.d0
     
     ip=0  
     ip1=0
@@ -458,11 +453,11 @@ module part_tools
 !        call MPI_BARRIER(com%comm_0,ierr)
 !      enddo
 
-if (prt%id==1) nsubdt=100
-if (prt%id==2) nsubdt=10
-if (prt%id==3) nsubdt=5
-if (prt%id==4) nsubdt=2
-if (prt%id==5) nsubdt=1
+if (prt%id==1) nsubdt=50
+if (prt%id==2) nsubdt=20
+if (prt%id==3) nsubdt=10
+if (prt%id==4) nsubdt=5
+if (prt%id==5) nsubdt=2
 if (prt%id==6) nsubdt=1
 if (prt%id==7) nsubdt=1
 if (prt%id==8) nsubdt=1
@@ -765,7 +760,7 @@ if (prt%id==8) nsubdt=1
         prt%v(ip,prt%jtme)=prt%v(ip,prt%jtme)+partdt
       endif
     enddo
-    if (irk==3) then
+!    if (irk==3) then
     do ip=1,prt%nlast
       if (prt%isfre(ip)==0) then
         x=prt%u(ip,prt%ipos+1)
@@ -854,6 +849,11 @@ if (prt%id==8) nsubdt=1
             enddo
             tag = 1+nspart+ip
             call mpi_send(prt%send_buff(1),3,MPI_DOUBLE_PRECISION,com%ip_a(idir)+isde,tag,com%comm_a(idir),ierr)
+            do iv=1,prt%nvar
+              prt%send_buff(iv)=prt%ddt(2,iploc,iv)
+            enddo
+            tag = 1+nspart+ip+3
+            call mpi_send(prt%send_buff(1),prt%nvar,MPI_DOUBLE_PRECISION,com%ip_a(idir)+isde,tag,com%comm_a(idir),ierr)
             call remv_part(iploc,prt)
           enddo
         endif
@@ -872,6 +872,11 @@ if (prt%id==8) nsubdt=1
             call mpi_recv(prt%recv_buff(1),3,MPI_DOUBLE_PRECISION,com%ip_a(idir)-isde,tag,com%comm_a(idir),status,ierr)
             do iv=1,3
               prt%v(ipnew,iv)=prt%recv_buff(iv)
+            enddo
+            tag = 1+nrpart+ip+3
+            call mpi_recv(prt%recv_buff(1),prt%nvar,MPI_DOUBLE_PRECISION,com%ip_a(idir)-isde,tag,com%comm_a(idir),status,ierr)
+            do iv=1,3
+              prt%ddt(2,ipnew,iv)=prt%recv_buff(iv)
             enddo
           enddo
         endif
@@ -905,13 +910,23 @@ if (prt%id==8) nsubdt=1
             if (isd1==-1.and.isd2==1) iploc=prt%isw(ip)
             if (isd1==1.and.isd2==-1) iploc=prt%ine(ip)
             if (isd1==1.and.isd2==1) iploc=prt%inw(ip)
-            prt%send_buff=prt%u(iploc,:)
+
+            do iv=1,prt%nvar
+              prt%send_buff(iv)=prt%u(iploc,iv)
+            enddo
             tag = 1+ip
             call mpi_send(prt%send_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip+isd2*com%np_a(3)+isd1,tag,com%comm_0,ierr)
-            prt%send_buff(1:3)=prt%v(iploc,1:3)
+
+            do iv=1,3
+              prt%send_buff(iv)=prt%v(iploc,iv)
+            enddo
             tag = 1+nspart+ip
             call mpi_send(prt%send_buff,3,MPI_DOUBLE_PRECISION,com%ip+isd2*com%np_a(3)+isd1,tag,com%comm_0,ierr)
-
+            do iv=1,prt%nvar
+              prt%send_buff(iv)=prt%ddt(2,iploc,iv)
+            enddo
+            tag = 1+nspart+ip+3
+            call mpi_send(prt%send_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip+isd2*com%np_a(3)+isd1,tag,com%comm_0,ierr)
             call remv_part(iploc,prt)
           enddo
         endif
@@ -923,16 +938,25 @@ if (prt%id==8) nsubdt=1
             tag = 1+ip
             call mpi_recv(prt%recv_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip-isd2*com%np_a(3)-isd1,tag,com%comm_0,status,ierr)
             call injc_part(0.d0,0.d0,0.d0,prt%c,0.d0,0.d0,0.d0,prt,ipnew,3)
-            prt%u(ipnew,:)=prt%recv_buff
+            do iv=1,prt%nvar
+              prt%u(ipnew,iv)=prt%recv_buff(iv)
+            enddo
             tag = 1+ip+nrpart
             call mpi_recv(prt%recv_buff,3,MPI_DOUBLE_PRECISION,com%ip-isd2*com%np_a(3)-isd1,tag,com%comm_0,status,ierr)
-            prt%v(ipnew,:)=prt%recv_buff(1:3)
+            do iv=1,3
+              prt%v(ipnew,iv)=prt%recv_buff(iv)
+            enddo
+            tag = 1+nrpart+ip+3
+            call mpi_recv(prt%recv_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip-isd2*com%np_a(3)-isd1,tag,com%comm_0,status,ierr)
+            do iv=1,3
+              prt%ddt(2,ipnew,iv)=prt%recv_buff(iv)
+            enddo
           enddo
         endif
         call MPI_BARRIER(com%comm_0,ierr)
       enddo
     enddo  
-  endif
+!  endif
   if (irk==3.and.isubdt==nsubdt)  write (*,*) "A npart:",prt%npart," nlast:",prt%nlast," nfree",prt%nfree," ip ",com%ip
   enddo
 end subroutine iter_part
