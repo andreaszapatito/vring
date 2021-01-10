@@ -393,9 +393,9 @@ module divergence
       do jc=1,var%msh%nr
         do ic=1,var%msh%ntheta
           var%su%qcap(ic,jc,kc)=(var%sp%dph(ic,jc,kc)-var%sp%dph(ic,jc,kc-1))* var%msh%dx3
-          if (isnan(var%su%qcap(ic,jc,kc)))  then
-                  write (*,*) "Field crash"
-            stop
+          if (isnan(var%su%qcap(ic,jc,kc))) then
+                  write (*,*) "Flow field crash"
+                  stop
           endif
         enddo
       enddo

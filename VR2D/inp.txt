@@ -3,8 +3,8 @@ dim                  3
 npth                 1     2    2
 
 ===Mesh===
-nx                   1   384  512
-maxr                 1.5 
+nx                   1   256  256
+maxr                 2 
 maxz                 2
  
 ===Flag===
@@ -13,7 +13,7 @@ poisson              fftp
  
 ===Para===
 dt                   0.001
-totstp           10000
+totstp           4000
 expstp           1000
 anlstp           1000 
 restrt              0
