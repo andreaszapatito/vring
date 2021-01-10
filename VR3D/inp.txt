@@ -4,8 +4,8 @@ npth                 1     4    8
 
 ===Mesh===
 nx                 513   256  512
-maxr                 1
-maxz                 4
+maxr               1.5
+maxz                 3 
  
 ===Flag===
 poisson              fftp

@@ -3,9 +3,9 @@ n. processors (th,r,z):        00000001        00000004        00000008
 Mesh characteristics__(mesh)_
 nth,nr,nz   local     :        00000513        00000064        00000064
 nth,nr,nz   global    :        00000513        00000256        00000512
-dth,dr,dz             :      0.01224792      0.00390625      0.00781250
-rmax                  :      0.25000000      0.00195312      0.24804688
-zmax                  :      0.50000000      0.00390625      0.49609375
+dth,dr,dz             :      0.01224792      0.00585938      0.00585938
+rmax                  :      0.37500000      0.00292969      0.37207031
+zmax                  :      0.37500000      0.00292969      0.37207031
 Problem constants_____(cons)_
 solver                :
 Problem parameters____(para)_

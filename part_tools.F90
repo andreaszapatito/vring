@@ -234,7 +234,7 @@ module part_tools
 
     prt%npart=0
     prt%tpart=0
-    prt%naloc=100000
+    prt%naloc=50000
 
     prt%nfree=0
     prt%nlast=0
@@ -463,14 +463,14 @@ module part_tools
             write (23,"(100(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
           endif
         enddo
-        write (23,"(100(E20.8))")
+        if (itask==com%np-1) write (23,"(100(E20.8))")
         close (23)
       endif
       call MPI_BARRIER(com%comm_0,ierr)
     enddo
     endif
 
-    if (prt%id==1) nsubdt=20
+    if (prt%id==1) nsubdt=50
     if (prt%id==2) nsubdt=20
     if (prt%id==3) nsubdt=10
     if (prt%id==4) nsubdt=10
