@@ -205,9 +205,9 @@ module momentum_terms
        r=var%msh%rc(jc)
        th=var%msh%thc(ic)
 !      if (var%msh%rc(jc).le.0.1999) var%su%corr3s(ic,jc)= (var%par%unom1-var%par%unom0)*(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))
-      if (var%msh%rc(jc).le.0.4999) var%su%corr1s(ic,jc)= (profilet(t1,r,th)-profilet(t0,r,th))
-      if (var%msh%rc(jc).le.0.4999) var%su%corr2s(ic,jc)= (profiler(t1,r,th)-profiler(t0,r,th))
-      if (var%msh%rc(jc).le.0.4999) var%su%corr3s(ic,jc)= (var%par%unom1-var%par%unom0)
+      if (var%msh%rc(jc).le.0.4999) var%su%corr1s(ic,jc)= (profilet(t1,r,th)-profilet(t0,r,th))*(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))
+      if (var%msh%rc(jc).le.0.4999) var%su%corr2s(ic,jc)= (profiler(t1,r,th)-profiler(t0,r,th))*(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))
+      if (var%msh%rc(jc).le.0.4999) var%su%corr3s(ic,jc)= (var%par%unom1-var%par%unom0)*(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))
      enddo
     enddo
  
