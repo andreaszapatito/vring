@@ -3,9 +3,9 @@ dim                  3
 npth                 1     2    2
 
 ===Mesh===
-nx                   1   256  256
-maxr                 2 
-maxz                 2
+nx                   1   256  512
+maxr                1.5
+maxz                 3
  
 ===Flag===
 poisson              fftp

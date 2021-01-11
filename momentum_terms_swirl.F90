@@ -189,6 +189,8 @@ module momentum_terms
     t0=var%par%ntime+var%par%crkrom(var%par%irkstep)*dt
     t1=var%par%ntime+(var%par%crkgam(var%par%irkstep)+var%par%crkrom(var%par%irkstep))*dt
 
+    t0=var%par%ntime
+    t1=var%par%ntime+dt
 !   no inlet
 !    t1=t0
 
