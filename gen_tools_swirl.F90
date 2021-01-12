@@ -137,7 +137,7 @@ module gen_tools
             pi=4.0*atan(1.0)
             if (r<0.5) then
               u=min(0.2,t*r)
-              u=-0.1*4.0*r*r*sin(10.0*2.0*pi*t)*sin(5.0*2.0*pi*r/0.5)*cos(30.0*th)
+              u=-0.1*4.0*r*r*sin(10.0*2.0*pi*t)*sin(10.0*2.0*pi*r)*cos(16.0*th)
             endif
             !u=0.0
           end function  profilet
@@ -150,7 +150,7 @@ module gen_tools
             pi=4.0*atan(1.0)
             if (r<0.5) then
               u=min(0.2,t*r)
-              u=0.1*4.0*r*r*sin(10.0*2.0*pi*t)*cos(5.0*2.0*pi*r/0.5)*sin(30.0*th)
+              u=0.1*4.0*r*r*sin(5.0*2.0*pi*t)*cos(5.0*2.0*pi*r)*sin(16.0*th)
             endif
 
             !u=0.0
@@ -171,6 +171,7 @@ module gen_tools
             if (tt.gt.t1.and.tt.lt.n) u=1.0
             if (tt.gt.n.and.tt.lt.n+t1) u=3.0*((n+t1-tt)/t1)**2-2.0*((n+t1-tt)/t1)**3
             if (tt.gt.n+t1) u=0.0
+            u=u*(1.0+0.1*sin(5.0*2.0*pi*t))
           end function  profile
 
           function uvring(r1,x1,t1,epsilon) result(u)

@@ -240,20 +240,20 @@ module part_tools
     prt%nlast=0
 
     !prt%r=0.1*(10.0**(0.5*float(id-1)))*(10.0**(-6.0))/0.02
-    if(id==1)  prt%r=0.200*(10.0**(-6.0))/0.02
-    if(id==2)  prt%r=0.500*(10.0**(-6.0))/0.02
-    if(id==3)  prt%r=1.000*(10.0**(-6.0))/0.02
-    if(id==4)  prt%r=2.000*(10.0**(-6.0))/0.02
-    if(id==5)  prt%r=5.000*(10.0**(-6.0))/0.02
-    if(id==6)  prt%r=10.00*(10.0**(-6.0))/0.02
-    if(id==7)  prt%r=20.00*(10.0**(-6.0))/0.02
-    if(id==8)  prt%r=50.00*(10.0**(-6.0))/0.02
-    if(id==9)  prt%r=100.0*(10.0**(-6.0))/0.02
-    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
+    if(id==1)  prt%r=0.500*(10.0**(-6.0))/0.02
+    if(id==2)  prt%r=1.000*(10.0**(-6.0))/0.02
+    if(id==3)  prt%r=2.000*(10.0**(-6.0))/0.02
+    if(id==4)  prt%r=5.000*(10.0**(-6.0))/0.02
+    if(id==5)  prt%r=10.00*(10.0**(-6.0))/0.02
+    if(id==6)  prt%r=20.00*(10.0**(-6.0))/0.02
+    if(id==7)  prt%r=50.00*(10.0**(-6.0))/0.02
+    if(id==8)  prt%r=100.0*(10.0**(-6.0))/0.02
+!    if(id==9)  prt%r=100.0*(10.0**(-6.0))/0.02
+!    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
-    prt%nprcl=0.1
+    prt%nprcl=0.001
     prt%inj=10
     prt%expstp=100
     prt%jtme=1
@@ -470,14 +470,14 @@ module part_tools
     enddo
     endif
 
-    if (prt%id==1) nsubdt=50
-    if (prt%id==2) nsubdt=20
-    if (prt%id==3) nsubdt=10
-    if (prt%id==4) nsubdt=10
-    if (prt%id==5) nsubdt=5
-    if (prt%id==6) nsubdt=5
-    if (prt%id==7) nsubdt=2
-    if (prt%id==8) nsubdt=2
+    if (prt%id==1) nsubdt=10
+    if (prt%id==2) nsubdt=5
+    if (prt%id==3) nsubdt=5
+    if (prt%id==4) nsubdt=2
+    if (prt%id==5) nsubdt=2
+    if (prt%id==6) nsubdt=1
+    if (prt%id==7) nsubdt=1
+    if (prt%id==8) nsubdt=1
     if (prt%id==9) nsubdt=1
     if (prt%id==10) nsubdt=1
 

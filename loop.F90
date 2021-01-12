@@ -36,7 +36,7 @@ module loop
 
       integer ic,jc,kc
 
-      nparticles=10
+      nparticles=8
 
       allocate(var%prt(nparticles))
       var%con%timming0= MPI_Wtime()/60.0
@@ -53,7 +53,7 @@ module loop
       do id=1,nparticles
 !        write (*,*) 'inject',id,var%par%nstep,var%prt(id)%inj
         if (mod(var%par%nstep,var%prt(id)%inj)==0) then
-                call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
+           call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
         endif
       enddo
 ! Non-solenoidal component
