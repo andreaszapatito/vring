@@ -894,7 +894,7 @@ module part_tools
             enddo
             tag = 1+nrpart+ip+3
             call mpi_recv(prt%recv_buff(1),prt%nvar,MPI_DOUBLE_PRECISION,com%ip_a(idir)-isde,tag,com%comm_a(idir),status,ierr)
-            do iv=1,3
+            do iv=1,prt%nvar
               prt%ddt(2,ipnew,iv)=prt%recv_buff(iv)
             enddo
           enddo
@@ -967,7 +967,7 @@ module part_tools
             enddo
             tag = 1+nrpart+ip+3
             call mpi_recv(prt%recv_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip-isd2*com%np_a(3)-isd1,tag,com%comm_0,status,ierr)
-            do iv=1,3
+            do iv=1,prt%nvar
               prt%ddt(2,ipnew,iv)=prt%recv_buff(iv)
             enddo
           enddo
