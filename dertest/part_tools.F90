@@ -134,7 +134,7 @@ module part_tools
       endif
     enddo
 
-!    if (com%ip==0) call injc_part(0.2d0,0.2d0,0.1d0,1.d0,0.2d0,0.2d0,0.1d0,prt,ipnew,1)
+    if (com%ip==0) call injc_part(0.2d0,0.2d0,0.1d0,1.d0,0.2d0,0.2d0,0.1d0,prt,ipnew,1)
 
   end subroutine inlt_part
 
@@ -145,7 +145,7 @@ module part_tools
 
     real(kind=8)     :: x,y,z,c,u,v,w
     integer          :: ip,it,icall
-!    write (*,*) 'inject particle',ip,prt%nfree,prt%nlast,prt%npart
+    write (*,*) 'inject particle',ip,prt%nfree,prt%nlast,prt%npart
     it=0
     prt%npart=prt%npart+1
     if (it==1) prt%tpart=prt%npart+1
@@ -185,7 +185,7 @@ module part_tools
     prt%u(ip,prt%ijac+5)=1.0
     prt%u(ip,prt%ijac+9)=1.0
 
-!    write (*,*) 'particle injected',ip,prt%nfree,prt%nlast,prt%npart
+    write (*,*) 'particle injected',ip,prt%nfree,prt%nlast,prt%npart
   end subroutine injc_part
 
   subroutine remv_part(ip,prt)
@@ -502,7 +502,7 @@ module part_tools
     prt%ndl=0
     do ip=1,prt%nlast
       if (prt%isfre(ip)==0) then
-!        write (*,"(3(I5),100(E20.8))") par%istep,irk,ip,(prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
+        write (*,"(3(I5),100(E20.8))") par%istep,irk,ip,(prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
               
         x=prt%u(ip,prt%ipos+1)
         y=prt%u(ip,prt%ipos+2)
@@ -575,12 +575,11 @@ module part_tools
                    if (ivar==2.and.msh%rc(irof).le.0.0001) prt%yint(iv)=0.0
                    if (ivar==3) prt%yint(iv)=su%q3(itof,irof,izof)
 !                   prt%yint(iv,1)=float(izof)+float(irof)
-!                   if (ivar==2)  write (*,"(7(I5),100(E20.8))") ivar,ifst1,ifst2,ifst3,itof,irof,izof,prt%yint(iv)
+                   if (ivar==2)  write (*,"(7(I5),100(E20.8))") ivar,ifst1,ifst2,ifst3,itof,irof,izof,prt%yint(iv)
 !                   prt%yint(iv,2)=float(irof)+float(izof)
-!if (ivar==1)       prt%yint(iv)=0.0
-!if (ivar==2)       prt%yint(iv)=min(1.0*msh%rc(irof),0.1*msh%rc(irof)**(-1.d0))
-!if (ivar==2)       prt%yint(iv)=0.1*msh%rc(irof)**(1.d0)
-!if (ivar==3)       prt%yint(iv)=1.0
+if (ivar==1)       prt%yint(iv)=0.0
+if (ivar==2)       prt%yint(iv)=msh%rc(irof)**2
+if (ivar==3)       prt%yint(iv)=1.0
         if (isnan(prt%yint(iv))) then
                 write (*,*) 'yint ivar is nan',iv,ivar,itof,irof,izof,ifst1,ifst2,ifst3
            stop 
@@ -654,6 +653,7 @@ module part_tools
             cs=dcos(theta)
             cs2=dcos(2.0*theta)
             FI=(/ ft(ivar), fr(ivar), fz(ivar), ftt(ivar), ftr(ivar), ftz(ivar), frt(ivar), frr(ivar), frz(ivar), fzt(ivar), fzr(ivar), fzz(ivar) /)
+!            if (ip.eq.1) write (*,*) 'particle transf c ff',ivar,f,y0(ivar)
             M(1,1:12)= (/    -sn/r,      cs,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
             M(2,1:12)= (/     cs/r,      sn,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
             M(3,1:12)= (/     0.d0,    0.d0,1.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
@@ -679,6 +679,7 @@ module part_tools
                 do im=1,12
                   ddff(ivar,id1,id2)=ddff(ivar,id1,id2)+M(3+id1+3*(id2-1),im)*FI(im)
                 enddo
+  !            if (ip.eq.1) write (*,"(A,100(E20.8))") 'particle ', id1,id2,ddff(ivar,id1,id2),
               enddo
             enddo
           enddo
@@ -756,6 +757,7 @@ module part_tools
         DDNMAT(3,3,2,1)=0.d0; DDNMAT(3,3,2,2)=0.d0; DDNMAT(3,3,2,3)= 0.d0
         DDNMAT(3,3,3,1)=0.d0; DDNMAT(3,3,3,2)=0.d0; DDNMAT(3,3,3,3)= 0.d0
 
+        write (*,*) cs,sn
         do id=1,3
           prt%vel(id)=0.d0
           do jd=1,3
@@ -781,7 +783,7 @@ module part_tools
           enddo
         enddo
 
-!        if (ip.eq.1) write (*,"(A,100(E20.8))") "dvel",prt%dvel(1,1),dff(1,1),dff(2,1),NMAT(1,1),NMAT(1,2),ff(1),ff(2),DNMAT(1,1,1),DNMAT(1,1,2),DNMAT(1,1,3),cs,sn,rs
+        if (ip.eq.1) write (*,"(A,100(E20.8))") "dvel",prt%dvel(1,1),dff(1,1),dff(2,1),NMAT(1,1),NMAT(1,2),ff(1),ff(2),DNMAT(1,1,1),DNMAT(1,1,2),DNMAT(1,1,3),cs,sn,rs
 
 
 !        prt%vel(1)=ff(2)*dcos(theta)-ff(1)*dsin(theta)
@@ -810,14 +812,14 @@ module part_tools
 !          enddo
 !        enddo
 !        if (ip.eq.1) write (3100+com%ip,"(100(E20.8))") x,y,z,ff(1),dff(1,1),dff(1,2),dff(1,3),ff(2),dff(2,1),dff(2,2),dff(2,3),ff(3),dff(3,1),dff(3,2),dff(3,3),y0(1),y0(2),y0(3),f(2),fr(2)
-!!        if (ip.eq.1) write (3000+com%ip,"(100(E20.8))") x,y,z,prt%vel(1),prt%dvel(1,1),prt%dvel(1,2),prt%dvel(1,3),prt%vel(2),prt%dvel(2,1),prt%dvel(2,2),prt%dvel(2,3), prt%vel(3),prt%dvel(3,1),prt%dvel(3,2),prt%dvel(3,3)
-!       if (ip.eq.1) write (3000+com%ip,"(100(E20.8))") x,y,z,prt%vel(1),prt%vel(2),prt%vel(3)
-!       if (ip.eq.1) write (3100+com%ip,"(100(E20.8))") x,y,z,prt%dvel(1,1),prt%dvel(1,2),prt%dvel(1,3),prt%dvel(2,1),prt%dvel(2,2),prt%dvel(2,3),prt%dvel(3,1),prt%dvel(3,2),prt%dvel(3,3)
-!
-!       if (ip.eq.1) write (3210+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(1,1,1),prt%ddvel(1,1,2),prt%ddvel(1,1,3),prt%ddvel(1,2,1),prt%ddvel(1,2,2),prt%ddvel(1,2,3),prt%ddvel(1,3,1),prt%ddvel(1,3,2),prt%ddvel(1,3,3)
-!       if (ip.eq.1) write (3220+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(2,1,1),prt%ddvel(2,1,2),prt%ddvel(2,1,3),prt%ddvel(2,2,1),prt%ddvel(2,2,2),prt%ddvel(2,2,3),prt%ddvel(2,3,1),prt%ddvel(2,3,2),prt%ddvel(2,3,3)
-!       if (ip.eq.1) write (3230+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(3,1,1),prt%ddvel(3,1,2),prt%ddvel(3,1,3),prt%ddvel(3,2,1),prt%ddvel(3,2,2),prt%ddvel(3,2,3),prt%ddvel(3,3,1),prt%ddvel(3,3,2),prt%ddvel(3,3,3)
-!
+!        if (ip.eq.1) write (3000+com%ip,"(100(E20.8))") x,y,z,prt%vel(1),prt%dvel(1,1),prt%dvel(1,2),prt%dvel(1,3),prt%vel(2),prt%dvel(2,1),prt%dvel(2,2),prt%dvel(2,3), prt%vel(3),prt%dvel(3,1),prt%dvel(3,2),prt%dvel(3,3)
+       if (ip.eq.1) write (3000+com%ip,"(100(E20.8))") x,y,z,prt%vel(1),prt%vel(2),prt%vel(3)
+       if (ip.eq.1) write (3100+com%ip,"(100(E20.8))") x,y,z,prt%dvel(1,1),prt%dvel(1,2),prt%dvel(1,3),prt%dvel(2,1),prt%dvel(2,2),prt%dvel(2,3),prt%dvel(3,1),prt%dvel(3,2),prt%dvel(3,3)
+
+       if (ip.eq.1) write (3210+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(1,1,1),prt%ddvel(1,1,2),prt%ddvel(1,1,3),prt%ddvel(1,2,1),prt%ddvel(1,2,2),prt%ddvel(1,2,3),prt%ddvel(1,3,1),prt%ddvel(1,3,2),prt%ddvel(1,3,3)
+       if (ip.eq.1) write (3220+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(2,1,1),prt%ddvel(2,1,2),prt%ddvel(2,1,3),prt%ddvel(2,2,1),prt%ddvel(2,2,2),prt%ddvel(2,2,3),prt%ddvel(2,3,1),prt%ddvel(2,3,2),prt%ddvel(2,3,3)
+       if (ip.eq.1) write (3230+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(3,1,1),prt%ddvel(3,1,2),prt%ddvel(3,1,3),prt%ddvel(3,2,1),prt%ddvel(3,2,2),prt%ddvel(3,2,3),prt%ddvel(3,3,1),prt%ddvel(3,3,2),prt%ddvel(3,3,3)
+
         do i=1,3
           do j=1,3
             prt%jac(i,j)=prt%u(ip,prt%ijac+i+3*j-3)
@@ -1104,9 +1106,9 @@ module part_tools
       enddo
     enddo  
 !  endif
-!  if (irk==3.and.isubdt==nsubdt)  write (*,*) "A npart:",prt%npart," nlast:",prt%nlast," nfree",prt%nfree," ip ",com%ip
-!  if (prt%npart>0) write (1000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),(prt%u(1,ii),ii=1,prt%nvar)
-!  if (prt%npart>0) write (2000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),prt%vel(1),prt%vel(2),prt%vel(3)
+  if (irk==3.and.isubdt==nsubdt)  write (*,*) "A npart:",prt%npart," nlast:",prt%nlast," nfree",prt%nfree," ip ",com%ip
+  if (prt%npart>0) write (1000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),(prt%u(1,ii),ii=1,prt%nvar)
+  if (prt%npart>0) write (2000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),prt%vel(1),prt%vel(2),prt%vel(3)
 
   enddo
 end subroutine iter_part

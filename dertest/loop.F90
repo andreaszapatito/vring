@@ -51,12 +51,12 @@ module loop
         var%par%istep = istep
         var%par%nstep = istep+var%par%nstepi
         var%par%ntime = var%par%dt+var%par%ntime
-        do id=1,nparticles
-          if (mod(var%par%nstep,var%prt(id)%inj)==0) then
-                !if (istep==0) call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
-                call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
-          endif
-        enddo
+      do id=1,nparticles
+!        write (*,*) 'inject',id,var%par%nstep,var%prt(id)%inj
+        if (mod(var%par%nstep,var%prt(id)%inj)==0) then
+                if (istep==0) call inlt_part(var%par,var%prt(id),var%msh,var%su,var%com)
+        endif
+      enddo
 ! Non-solenoidal component
         var%con%timming1= MPI_Wtime()/60.0
 ! RK Loop start
