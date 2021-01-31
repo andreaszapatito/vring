@@ -62,10 +62,12 @@ module loop
 ! RK Loop start
         do irkstep = 1,3 !var%par%nrkstep
           call communicateeq(var)
+          var%par%irkstep = irkstep
           do id=1,nparticles
           if (irkstep==1)  call iter_part(irkstep,var%prt(id),var%msh,var%com,var%su,var%par)
+!            call iter_part(irkstep,var%prt(id),var%msh,var%com,var%su,var%par) ! particles need further temporal resolution euler
+!            method used instead
           enddo
-          var%par%irkstep = irkstep
           call ucoeff(var)  
           call verbose(var,"ucoeff        called")
 ! coesys

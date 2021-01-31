@@ -1,6 +1,6 @@
 ===Comm===      
 dim                  3
-npth                 1     2    2
+npth                 1     1    1
 
 ===Mesh===
 nx                   1   256  512
@@ -24,7 +24,7 @@ w                    0.0
 w                    0.0   0.0  0.0 16.0
 rw.r0.rh             1.0   0.5  5.0 
 p                    1.0
-Re                5555.5
+Re                1000.0
 Pe                   1.0
 nrkstep              3
 slip                 0.0

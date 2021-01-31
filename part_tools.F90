@@ -5,7 +5,7 @@ module part_type
   type :: part
 
 ! Data
-    real(kind=8), allocatable      :: u(:,:), ddt(:,:,:), v(:,:),inflow(:),d(:)
+    real(kind=8), allocatable      :: u(:,:), ddt(:,:,:), v(:,:),inflow(:),d(:),uinit(:,:)
     real(kind=8), allocatable      :: send_buff(:),recv_buff(:)
     real(kind=8), dimension(3)     :: vel
     real(kind=8), dimension(3,3)   :: dvel
@@ -33,7 +33,7 @@ module part_type
     integer      :: nlast
     integer      :: nvar
     integer      :: nder
-    integer      :: ipos, ivel, ijac,ijrt,ihes,ihrt
+    integer      :: ipos, ivel, ijac,ijrt,ihes,ihrt,icvl,idcv,iddc
     integer      :: jtme, jcon, jid
     integer      :: nitr
     real(kind=8) :: nprcl
@@ -70,6 +70,7 @@ module part_tools
     type(mesh_a)     :: msh
 
     allocate(prt%u(prt%naloc,prt%nvar))
+    allocate(prt%uinit(prt%naloc,78))
     allocate(prt%d(prt%nder))
     allocate(prt%ddt(3,prt%naloc,prt%nvar))
     allocate(prt%v(prt%naloc,3))
@@ -111,6 +112,7 @@ module part_tools
           ut=0.d0
           ur=0.d0
           uz=su%q3(it,ir,1)
+!          uz=1.d0
   
           prt%inflow(ir)=prt%inflow(ir)+(prt%c*a*su%q3(it,ir,1)*par%dt*float(prt%inj)/prt%nprcl)
           n=floor(prt%inflow(ir))
@@ -168,10 +170,15 @@ module part_tools
 
     if (ip==0) write (*,*) 'ip is zero in injc',ip,prt%nfree,prt%nlast,prt%npart
     prt%u(ip,:)=0.0
+    prt%uinit(ip,:)=0.0
     prt%v(ip,prt%jtme)=0.0
     prt%v(ip,prt%jcon)=c
 
-    prt%ddt(:,ip,:)=0.0
+    prt%ddt(1,ip,:)=0.0
+    prt%ddt(2,ip,:)=0.0
+    prt%ddt(3,ip,:)=0.0
+
+
 
     prt%u(ip,1)=x
     prt%u(ip,2)=y
@@ -210,7 +217,9 @@ module part_tools
 
     prt%u(ip,:)=0.0
     prt%v(ip,:)=0.0
-    prt%ddt(:,ip,:)=0.0
+    prt%ddt(1,ip,:)=0.0
+    prt%ddt(2,ip,:)=0.0
+    prt%ddt(3,ip,:)=0.0
 
   end subroutine remv_part
 
@@ -234,7 +243,11 @@ module part_tools
     prt%ijrt=15
     prt%ihes=24
     prt%ihrt=51
-    prt%nvar=78
+    prt%icvl=78
+    prt%idcv=78+3
+    prt%iddc=78+3+9
+
+    prt%nvar=78+39
     prt%nder=10
 
     prt%npart=0
@@ -437,7 +450,7 @@ module part_tools
           if (itask.eq.0) then 
                           open (unit=prt%id+22,file="part"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='rewind')
             write (prt%id+22,"(A32,E20.8,A12,E20.8,A2)") 'title = "particles diameter: ',prt%r,' stokes: ',prt%st,'"'
-            write (prt%id+22,"(A32,100(A4,I2.2))") 'variables = "id", "time", "c",',(('u',ii),ii=1,prt%nvar),(('d',ii),ii=1,prt%nder)
+            write (prt%id+22,"(A32,200(A4,I3.3))") 'variables = "id", "time", "c",',(('u',ii),ii=1,prt%nvar),(('d',ii),ii=1,prt%nder)
           endif
           if (itask.ne.0) open (unit=prt%id+22,file="part"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='append')
           do ip=1,prt%nlast
@@ -450,7 +463,7 @@ module part_tools
                       -prt%u(ip,prt%ijac+4)*prt%u(ip,prt%ijac+2)*prt%u(ip,prt%ijac+9) &
                       -prt%u(ip,prt%ijac+8)*prt%u(ip,prt%ijac+6)*prt%u(ip,prt%ijac+1) 
 
-              write (prt%id+22,"(100(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
+              write (prt%id+22,"(200(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
             endif
           enddo
           close (prt%id+22)
@@ -466,7 +479,7 @@ module part_tools
         do ip=1,prt%nlast
 !          write (*,*) prt%nids,prt%v(ip,prt%jid)
           if (prt%isfre(ip)==0.and.mod(prt%v(ip,prt%jid)-1.0,1000.0)<0.1) then
-            write (23,"(100(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
+            write (23,"(200(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
           endif
         enddo
         if (itask==com%np-1) write (23,"(100(E20.8))")
@@ -476,16 +489,16 @@ module part_tools
     enddo
     endif
 
-    if (prt%id==1) nsubdt=10
-    if (prt%id==2) nsubdt=5
-    if (prt%id==3) nsubdt=5
-    if (prt%id==4) nsubdt=2
-    if (prt%id==5) nsubdt=2
-    if (prt%id==6) nsubdt=1
-    if (prt%id==7) nsubdt=1
-    if (prt%id==8) nsubdt=1
-    if (prt%id==9) nsubdt=1
-    if (prt%id==10) nsubdt=1
+    if (prt%id==1) nsubdt=20
+    if (prt%id==2) nsubdt=10
+    if (prt%id==3) nsubdt=10
+    if (prt%id==4) nsubdt=5
+    if (prt%id==5) nsubdt=5
+    if (prt%id==6) nsubdt=5
+    if (prt%id==7) nsubdt=5
+    if (prt%id==8) nsubdt=5
+    if (prt%id==9) nsubdt=5
+    if (prt%id==10) nsubdt=5
 
     if (prt%id==1) nsubdt=1
   do isubdt=1,nsubdt
@@ -577,10 +590,11 @@ module part_tools
 !                   prt%yint(iv,1)=float(izof)+float(irof)
 !                   if (ivar==2)  write (*,"(7(I5),100(E20.8))") ivar,ifst1,ifst2,ifst3,itof,irof,izof,prt%yint(iv)
 !                   prt%yint(iv,2)=float(irof)+float(izof)
-!if (ivar==1)       prt%yint(iv)=0.0
+if (ivar==1)       prt%yint(iv)=0.0
 !if (ivar==2)       prt%yint(iv)=min(1.0*msh%rc(irof),0.1*msh%rc(irof)**(-1.d0))
-!if (ivar==2)       prt%yint(iv)=0.1*msh%rc(irof)**(1.d0)
-!if (ivar==3)       prt%yint(iv)=1.0
+if (ivar==2)       prt%yint(iv)=cos(8.d0*datan(1.d0)*msh%zm(izof))*1.0*msh%rc(irof)**(1.d0)
+!if (ivar==2)       prt%yint(iv)=0.0
+if (ivar==3)       prt%yint(iv)=1.0+sin(8.d0*datan(1.d0)*msh%zm(izof))*1.0
         if (isnan(prt%yint(iv))) then
                 write (*,*) 'yint ivar is nan',iv,ivar,itof,irof,izof,ifst1,ifst2,ifst3
            stop 
@@ -844,7 +858,10 @@ module part_tools
           do j=1,3
             do k=1,3
               prt%ddt(1,ip,prt%ihes+i+3*j-3+9*k-9)=prt%u(ip,prt%ihrt+i+3*j-3+9*k-9)
-              sumh=prt%hes(1,j,k)*prt%dvel(i,1)+prt%hes(2,j,k)*prt%dvel(i,2)+prt%hes(3,j,k)*prt%dvel(i,3)+prt%jac(1,j)*prt%jac(1,k)*prt%ddvel(i,1,1)+prt%jac(2,j)*prt%jac(1,k)*prt%ddvel(i,2,1)+prt%jac(3,j)*prt%jac(1,k)*prt%ddvel(i,3,1)+prt%jac(1,j)*prt%jac(2,k)*prt%ddvel(i,1,2)+prt%jac(1,j)*prt%jac(3,k)*prt%ddvel(i,1,3)+prt%jac(2,j)*prt%jac(2,k)*prt%ddvel(i,2,2)+prt%jac(2,j)*prt%jac(3,k)*prt%ddvel(i,2,3)+prt%jac(3,j)*prt%jac(2,k)*prt%ddvel(i,3,2)+prt%jac(3,j)*prt%jac(3,k)*prt%ddvel(i,3,3)
+              sumh=prt%hes(1,j,k)*prt%dvel(i,1)+prt%hes(2,j,k)*prt%dvel(i,2)+prt%hes(3,j,k)*prt%dvel(i,3) &
+              +prt%jac(1,j)*prt%jac(1,k)*prt%ddvel(i,1,1)+prt%jac(2,j)*prt%jac(1,k)*prt%ddvel(i,2,1)+prt%jac(3,j)*prt%jac(1,k)*prt%ddvel(i,3,1) &
+              +prt%jac(1,j)*prt%jac(2,k)*prt%ddvel(i,1,2)+prt%jac(1,j)*prt%jac(3,k)*prt%ddvel(i,1,3)+prt%jac(2,j)*prt%jac(2,k)*prt%ddvel(i,2,2) &
+              +prt%jac(2,j)*prt%jac(3,k)*prt%ddvel(i,2,3)+prt%jac(3,j)*prt%jac(2,k)*prt%ddvel(i,3,2)+prt%jac(3,j)*prt%jac(3,k)*prt%ddvel(i,3,3)
 
               prt%ddt(1,ip,prt%ihrt+i+3*j-3+9*k-9)=(1.0/prt%st)*(sumh-prt%u(ip,prt%ihrt+i+3*j-3+9*k-9))
             enddo
@@ -897,13 +914,47 @@ module part_tools
 !            prt%u(ip,prt%ivel+i)=prt%vel(i)
 !          enddo
 !        else
-          do i=1,prt%nvar
+
+!         if (isubdt.eq.1) then
+!           do i=1,78
+!             prt%uinit(ip,i)=prt%u(ip,i)
+!           enddo
+!         endif
+!
+
+          do i=1,78
 !            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(irk)*prt%ddt(1,ip,i)*partdt+par%crkrom(irk)*prt%ddt(2,ip,i)*partdt
             prt%u(ip,i)=prt%u(ip,i)+prt%ddt(1,ip,i)*partdt
-            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
+!            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
+          enddo
+          do i=1,3
+            prt%u(ip,i+78)=prt%vel(i)
+          enddo
+          do i=1,3
+            do j=1,3
+              prt%u(ip,78+3+i+3*(j-1))=prt%dvel(i,j)
+            enddo
+          enddo
+          do i=1,3
+            do j=1,3
+              do k=1,3
+                prt%u(ip,78+3+9+i+3*(j-1)+9*(k-1))=prt%ddvel(i,j,k)
+              enddo
+            enddo
           enddo
 !        endif
          if (irk==3) prt%v(ip,prt%jtme)=prt%v(ip,prt%jtme)+partdt
+
+!         if (isubdt.eq.nsubdt) then
+!           do i=1,78
+!            prt%u(ip,i)=prt%uinit(ip,i)+par%crkgam(irk)*prt%ddt(1,ip,i)*par%dt+par%crkrom(irk)*prt%ddt(2,ip,i)*par%dt
+!            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
+!          enddo
+!
+!
+!         endif
+
+
       endif
     enddo
 !    if (irk==3) then
