@@ -34,7 +34,7 @@
 # Data
 RESTART
 *.dat
-
+fort.*
 # Tail
 tmp
 *.phy

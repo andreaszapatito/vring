@@ -900,10 +900,13 @@ if (ivar==3)       prt%yint(iv)=1.0
 !          enddo
 !        else
           do i=1,prt%nvar
-!            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(irk)*prt%ddt(1,ip,i)*partdt+par%crkrom(irk)*prt%ddt(2,ip,i)*partdt
-            prt%u(ip,i)=prt%u(ip,i)+prt%ddt(1,ip,i)*partdt
+            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(irk)*prt%ddt(1,ip,i)*partdt+par%crkrom(irk)*prt%ddt(2,ip,i)*partdt
+!            prt%u(ip,i)=prt%u(ip,i)+prt%ddt(1,ip,i)*partdt
             prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
           enddo
+
+          if (ip.eq.1) write (3300+com%ip,"(100(E20.8))") x,y,z,prt%u(ip,1),prt%u(ip,2),prt%u(ip,3),prt%u(ip,4),prt%u(ip,5),prt%u(ip,6),prt%u(ip,7),prt%ddt(1,ip,1),prt%ddt(2,ip,1),prt%ddt(1,ip,4),prt%ddt(2,ip,4),prt%ddt(1,ip,7),prt%ddt(2,ip,7)
+
 !        endif
          if (irk==3) prt%v(ip,prt%jtme)=prt%v(ip,prt%jtme)+partdt
       endif

@@ -5,8 +5,8 @@ ROOT           = ~/
 PREPROC        = -cpp
 #OPT            = -O3  -ffree-line-length-none -I/home/andreas/Local/openmpi/openmpi-4.0.5/build/include -pthread -I/home/andreas/Local/oopenmpi/openmpi-4.0.5/build/lib/
 
-OPT           = -g -CB -fcheck='all'   -ffree-line-length-none
-#OPT           = -O3 
+#OPT           = -g -CB -fcheck='all'   -ffree-line-length-none
+OPT           = -O3 
 
 #FFTW related
 INC_FFTW       = -I/home/andreas/Local/fftw/fftw-3.3.9/build/include/
