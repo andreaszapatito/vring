@@ -1,11 +1,11 @@
 Domain decomposition__(comm)_
-n. processors (th,r,z):        00000001        00000001        00000001
+n. processors (th,r,z):        00000001        00000002        00000002
 Mesh characteristics__(mesh)_
-nth,nr,nz   local     :        00000001        00000256        00000512
+nth,nr,nz   local     :        00000001        00000128        00000256
 nth,nr,nz   global    :        00000001        00000256        00000512
-dth,dr,dz             :      6.28318531      0.00585938      0.00585938
-rmax                  :      1.50000000      0.00292969      1.49707031
-zmax                  :      3.00000000      0.00292969      2.99707031
+dth,dr,dz             :      6.28318531      0.00390625      0.00390625
+rmax                  :      0.50000000      0.00195312      0.49804688
+zmax                  :      1.00000000      0.00195312      0.99804688
 Problem constants_____(cons)_
 solver                :
 Problem parameters____(para)_

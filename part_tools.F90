@@ -113,6 +113,7 @@ module part_tools
           ur=0.d0
           uz=su%q3(it,ir,1)
 !          uz=1.d0
+!          uz=0.d0
   
           prt%inflow(ir)=prt%inflow(ir)+(prt%c*a*su%q3(it,ir,1)*par%dt*float(prt%inj)/prt%nprcl)
           n=floor(prt%inflow(ir))
@@ -268,7 +269,7 @@ module part_tools
     if(id==8)  prt%r=100.0*(10.0**(-6.0))/0.02
 !    if(id==9)  prt%r=100.0*(10.0**(-6.0))/0.02
 !    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
-    if(id==1)  prt%r=5.000*(10.0**(-6.0))/0.02
+    if(id==1)  prt%r=10.0*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
@@ -592,9 +593,9 @@ module part_tools
 !                   prt%yint(iv,2)=float(irof)+float(izof)
 if (ivar==1)       prt%yint(iv)=0.0
 !if (ivar==2)       prt%yint(iv)=min(1.0*msh%rc(irof),0.1*msh%rc(irof)**(-1.d0))
-if (ivar==2)       prt%yint(iv)=cos(8.d0*datan(1.d0)*msh%zm(izof))*1.0*msh%rc(irof)**(1.d0)
+!if (ivar==2)       prt%yint(iv)=sin(4.0*8.d0*datan(1.d0)*msh%zm(izof))*2.0*sin(4.0*8.d0*datan(1.d0)*msh%rc(irof))
 !if (ivar==2)       prt%yint(iv)=0.0
-if (ivar==3)       prt%yint(iv)=1.0+sin(8.d0*datan(1.d0)*msh%zm(izof))*1.0
+!if (ivar==3)       prt%yint(iv)=1.0!+cos(1.0*8.d0*datan(1.d0)*msh%zm(izof))*0.5
         if (isnan(prt%yint(iv))) then
                 write (*,*) 'yint ivar is nan',iv,ivar,itof,irof,izof,ifst1,ifst2,ifst3
            stop 

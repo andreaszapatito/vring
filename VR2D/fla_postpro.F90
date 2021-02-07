@@ -2,6 +2,24 @@ program flapost
 
 implicit none
 interface 
+
+   function jacnorm(h) result(hnorm)
+     real(kind=8)             :: hnorm
+     real(kind=8), intent(in) :: h(3,3,3)
+   end function jacnorm
+
+   function jachess(jxi,alfa,beta,gama) result(jhess)
+     real(kind=8)             :: jhess(3,3)
+     real(kind=8), intent(in) :: jxi(3,3)
+     real(kind=8), intent(in) :: alfa,beta,gama
+   end function jachess
+
+   function jacgrad(jxi,alfa,beta,gama) result(jgrad)
+     real(kind=8)             :: jgrad(3)
+     real(kind=8), intent(in) :: jxi(3,3)
+     real(kind=8), intent(in) :: alfa,beta,gama
+   end function jacgrad
+
    function hessnorm(h) result(hnorm)
      real(kind=8)             :: hnorm
      real(kind=8), intent(in) :: h(3,3,3)
@@ -41,6 +59,12 @@ interface
      real(kind=8), intent(in) :: alfa,beta,gama
    end function hesseta
 
+   function jaceta(jxi,alfa,beta,gama) result (j)
+     real(kind=8)             :: j(3,3)
+     real(kind=8), intent(in) :: jxi(3,3)
+     real(kind=8), intent(in) :: alfa,beta,gama
+   end function jaceta
+
 
 end interface 
 
@@ -61,20 +85,23 @@ end interface
     real(kind=8)              :: detj(npmax,1),hmag(npmax,1)
     real(kind=8)              :: alfa,beta,gama
     real(kind=8)              :: hxi(3,3,3),heta(3,3,3)
-    real(kind=8)              :: hgrad(3)
+    real(kind=8)              :: jxi(3,3),jeta(3,3)
+    real(kind=8)              :: hgrad(3),jgrad(3)
     real(kind=8)              :: hhess(3,3),hhinv(3,3)
+    real(kind=8)              :: jhess(3,3),jhinv(3,3)
     real(kind=8)              :: hnorm,hnorm0,hnorm1
+    real(kind=8)              :: jnorm,jnorm0,jnorm1
     real(kind=8)              :: pi4 
     real(kind=8)              :: error,prod
     real(kind=8)              :: c1,c01,c001,c0001
     logical                   :: reading
 
-tstep=20
+tstep=40
 nr=100
 fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
 fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
 pi4=datan(1.d0)
-do istep=15,tstep
+do istep=40,tstep
   do id=1,1
     nstep=istep*100
     write (timechar,fmt5) nstep
@@ -105,6 +132,7 @@ do istep=15,tstep
 !      h(1,3,3,3)=1.0
       do ii=1,3
         do jj=1,3
+          jxi(ii,jj)=j(ip,ii,jj)
           do kk=1,3
             hxi(ii,jj,kk)=h(ip,ii,jj,kk)
           enddo
@@ -125,14 +153,18 @@ do istep=15,tstep
 !        write (*,"(A10,100(E20.8))") 'hxi',hxi(2,:,:)
 !        write (*,"(A10,100(E20.8))") 'hxi',hxi(3,:,:)
         heta=hesseta(hxi,alfa,beta,gama)
+        jeta=jaceta(jxi,alfa,beta,gama)
 !        write (*,"(A10,100(E20.8))") 'het',heta(1,:,:)
 !        write (*,"(A10,100(E20.8))") 'het',heta(2,:,:)
 !        write (*,"(A10,100(E20.8))") 'het',heta(3,:,:)
         hnorm=hessnorm(heta)
+        jnorm=jacnorm(heta)
 !        write (*,"(A10,100(E20.8))") 'hnr',hnorm
-        hgrad=hessgrad(hxi,alfa,beta,gama)
+!        hgrad=hessgrad(hxi,alfa,beta,gama)
+        jgrad=jacgrad(jxi,alfa,beta,gama)
 !        write (*,"(A10,100(E20.8))") 'hgr',hgrad
-        hhess=hesshess(hxi,alfa,beta,gama)
+!        hhess=hesshess(hxi,alfa,beta,gama)
+        jhess=jachess(jxi,alfa,beta,gama)
 !       hhess(1,1)=1.d0
 !       hhess(1,2)=0.50d0
 !       hhess(1,3)=0.00
@@ -148,42 +180,43 @@ do istep=15,tstep
 !        write (*,"(A10,100(E20.8))") 'hhs',hhess(1,:)
 !        write (*,"(A10,100(E20.8))") 'hhs',hhess(2,:)
 !        write (*,"(A10,100(E20.8))") 'hhs',hhess(3,:)
-       error=hgrad(1)**2+hgrad(2)**2+hgrad(3)**2
+!       error=hgrad(1)**2+hgrad(2)**2+hgrad(3)**2
+       error=jgrad(1)**2+jgrad(2)**2+jgrad(3)**2
 !       error=hgrad(1)**2
 !        write (*,*) 'error 1',error,"alfa,beta,gama",alfa,beta,gama
 !       hhinv=hessinvr(hhess)
-       hhinv=hesscg(hhess)
+       jhinv=hesscg(jhess)
 !        write (*,"(A10,100(E20.8))") 'hhi',hhinv(1,:)
 !        write (*,"(A10,100(E20.8))") 'hhi',hhinv(2,:)
 !        write (*,"(A10,100(E20.8))") 'hhi',hhinv(3,:)
         prod=0.d0
         do ii=1,3
-          prod=prod+hhinv(1,ii)*hgrad(ii)
+          !prod=prod+hhinv(1,ii)*hgrad(ii)
+          prod=prod+jhinv(1,ii)*jgrad(ii)
         enddo
         alfa=alfa-prod
         alfa=dmod(alfa,pi4*8.d0)
         prod=0.d0
         do ii=1,3
-          prod=prod+hhinv(2,ii)*hgrad(ii)
+          !prod=prod+hhinv(2,ii)*hgrad(ii)
+          prod=prod+jhinv(2,ii)*jgrad(ii)
         enddo
         beta=beta-prod
         beta=dmod(beta,pi4*8.d0)
 
         prod=0.d0
         do ii=1,3
-          prod=prod+hhinv(3,ii)*hgrad(ii)
+          !prod=prod+hhinv(3,ii)*hgrad(ii)
+          prod=prod+jhinv(3,ii)*jgrad(ii)
         enddo
         gama=gama-prod
         gama=dmod(gama,pi4*8.d0)
         write (*,*) 'error ',ir,hnorm,error,"alfa,beta,gama",alfa*45.d0/pi4,beta*45.d0/pi4,gama*45.d0/pi4
-        if (error.lt.1.0e-20) exit
+        if (error.lt.1.0e-10) exit
       enddo
       hmag(ip,1)=abs(hnorm)
       call rabc(vec,alfa,beta,gama)
 
-      dir(ip,1)=hmag(ip,1)*vec(1,1)
-      dir(ip,2)=hmag(ip,1)*vec(2,1)
-      dir(ip,3)=hmag(ip,1)*vec(3,1)
       dir(ip,1)=vec(1,1)
       dir(ip,2)=vec(2,1)
       dir(ip,3)=vec(3,1)
@@ -237,6 +270,48 @@ enddo
 
 end program flapost
 
+function jacgrad(jxi,alfa,beta,gama) result (jgrad)
+implicit none
+
+interface
+   function jacnorm(jac) result (jnorm)
+     real(kind=8)             :: jnorm
+     real(kind=8), intent(in) :: jac(3,3)
+   end function jacnorm
+
+   function jaceta(jxi,alfa,beta,gama) result (jac)
+     real(kind=8)             :: jac(3,3)
+     real(kind=8), intent(in) :: jxi(3,3)
+     real(kind=8), intent(in) :: alfa,beta,gama
+   end function jaceta
+end interface
+    real(kind=8)             :: jgrad(3)
+    real(kind=8), intent(in) :: jxi(3,3)
+    real(kind=8), intent(in) :: alfa,beta,gama
+
+    real(kind=8)              :: da
+    real(kind=8)  :: jnorm(3,3,3)
+    real(kind=8)  :: jac(3,3)
+    integer                   :: i,j,k
+    integer                   :: l,m,n
+
+    da=0.01d0
+!    write(*,*) 'angles',alfa,beta,gama
+    do i=1,3
+      do j=1,3
+        do k=1,3
+          jac(:,:)=jaceta(jxi,alfa+dfloat(i-2)*da,beta+dfloat(j-2)*da,gama+dfloat(k-2)*da)
+          jnorm(i,j,k)=jac(1,1)
+        enddo
+      enddo
+    enddo
+
+    jgrad(1)=(jnorm(3,2,2)-jnorm(1,2,2))/(2.d0*da)
+    jgrad(2)=(jnorm(2,3,2)-jnorm(2,1,2))/(2.d0*da)
+    jgrad(3)=(jnorm(2,2,3)-jnorm(2,2,1))/(2.d0*da)
+
+end function jacgrad
+
 function hessgrad(hxi,alfa,beta,gama) result (hgrad)
 implicit none
 
@@ -251,10 +326,7 @@ interface
      real(kind=8), intent(in) :: hxi(3,3,3)
      real(kind=8), intent(in) :: alfa,beta,gama
    end function hesseta
-
-
 end interface
-
     real(kind=8)             :: hgrad(3)
     real(kind=8), intent(in) :: hxi(3,3,3)
     real(kind=8), intent(in) :: alfa,beta,gama
@@ -271,10 +343,7 @@ end interface
       do j=1,3
         do k=1,3
           h(:,:,:)=hesseta(hxi,alfa+dfloat(i-2)*da,beta+dfloat(j-2)*da,gama+dfloat(k-2)*da)
-!          hnorm(i,j,k)=(h(1,1,1)**2+h(2,2,2)**2+h(3,3,3)**2)**0.5
-!          hnorm(i,j,k)=h(1,1,1)+h(2,2,2)+h(3,3,3)
           hnorm(i,j,k)=h(1,1,1)
-!          write(*,*) 'hgrad hnorm',i,j,k, hnorm(i,j,k)
         enddo
       enddo
     enddo
@@ -283,14 +352,59 @@ end interface
     hgrad(2)=(hnorm(2,3,2)-hnorm(2,1,2))/(2.d0*da)
     hgrad(3)=(hnorm(2,2,3)-hnorm(2,2,1))/(2.d0*da)
 
-     write(*,*) 'hgrad ', hnorm(3,2,2),hnorm(1,2,2)
-     write(*,*) 'hgrad ', hnorm(2,3,2),hnorm(2,1,2)
-     write(*,*) 'hgrad ', hnorm(2,2,3),hnorm(2,2,1)
-     write(*,*) 'hgrad return', hgrad(1),hgrad(2),hgrad(3),hnorm(3,2,2)-hnorm(1,2,2)
-
-
-
 end function hessgrad
+
+function jachess(jxi,alfa,beta,gama) result(jhess)
+implicit none
+
+interface
+   function jacnorm(jac) result (jnorm)
+     real(kind=8)             :: jnorm
+     real(kind=8), intent(in) :: jac(3,3)
+   end function jacnorm
+
+   function jaceta(jxi,alfa,beta,gama) result (jac)
+     real(kind=8)             :: jac(3,3)
+     real(kind=8), intent(in) :: jxi(3,3)
+     real(kind=8), intent(in) :: alfa,beta,gama
+   end function jaceta
+
+
+end interface
+
+    real(kind=8)             :: jhess(3,3)
+    real(kind=8), intent(in) :: jxi(3,3)
+    real(kind=8), intent(in) :: alfa,beta,gama
+
+    real(kind=8)  :: jnorm(3,3,3)
+    real(kind=8)  :: jac(3,3)
+    real(kind=8)              :: da
+    integer                   :: i,j,k
+    integer                   :: l,m,n
+    da=0.01d0
+    do i=1,3
+      do j=1,3
+        do k=1,3
+          jac=jaceta(jxi,dfloat(i-2)*da+alfa,dfloat(j-2)*da+beta,dfloat(k-2)*da+gama)
+          jnorm(i,j,k)=jac(1,1)
+        enddo
+      enddo
+    enddo
+
+    jhess(1,1)=(jnorm(3,2,2)-2.0*jnorm(2,2,2)+jnorm(1,2,2))/(da**2.d0)
+    jhess(1,2)=(jnorm(3,3,2)+jnorm(1,1,2)-jnorm(3,1,2)-jnorm(1,3,2))/(4.d0*da**2.d0)
+    jhess(1,3)=(jnorm(3,2,3)+jnorm(1,2,1)-jnorm(3,2,1)-jnorm(1,2,3))/(4.d0*da**2.d0)
+
+    jhess(2,1)=(jnorm(3,3,2)+jnorm(1,1,2)-jnorm(3,1,2)-jnorm(1,3,2))/(4.d0*da**2.d0)
+    jhess(2,2)=(jnorm(2,3,2)-2.0*jnorm(2,2,2)+jnorm(2,1,2))/(da**2.d0)
+    jhess(2,3)=(jnorm(2,3,3)+jnorm(2,1,1)-jnorm(2,3,1)-jnorm(2,1,3))/(4.d0*da**2.d0)
+
+    jhess(3,1)=(jnorm(3,2,3)+jnorm(1,2,1)-jnorm(3,2,1)-jnorm(1,2,3))/(4.d0*da**2.d0)
+    jhess(3,2)=(jnorm(2,3,3)+jnorm(2,1,1)-jnorm(2,3,1)-jnorm(2,1,3))/(4.d0*da**2.d0)
+    jhess(3,3)=(jnorm(2,2,3)-2.0*jnorm(2,2,2)+jnorm(2,2,1))/(da**2.d0)
+
+end function jachess
+
 
 function hesshess(hxi,alfa,beta,gama) result(hhess)
 implicit none
@@ -324,10 +438,6 @@ end interface
       do j=1,3
         do k=1,3
           h=hesseta(hxi,dfloat(i-2)*da+alfa,dfloat(j-2)*da+beta,dfloat(k-2)*da+gama)
-!          h=hesseta(hxi,alfa,beta,gama)
-!          hnorm(i,j,k)=hessnorm(h)
-!          hnorm(i,j,k)=(h(1,1,1)**2+h(2,2,2)**2+h(3,3,3)**2)**0.5
-!          hnorm(i,j,k)=h(1,1,1)+h(2,2,2)+h(3,3,3)
           hnorm(i,j,k)=h(1,1,1)
         enddo
       enddo
@@ -351,7 +461,7 @@ subroutine rabc(vec,alfa,beta,gama)
 implicit none
     real(kind=8), intent(in)  :: alfa,beta,gama
     real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3)
-    real(kind=8)              :: rab(3,3),vec(3,3)
+    real(kind=8)              :: rab(3,3),rba(3,3),vec(3,3)
     real(kind=8)              :: nx(3,3),xn(3,3)
     integer                   :: i,j,k
     integer                   :: l,m,n
@@ -360,9 +470,9 @@ implicit none
     rc(1,1)=1.d0; rc(1,2)=0.d0; rc(1,3)=0.d0; rc(2,1)=0.d0; rc(2,2)=dcos(gama); rc(2,3)=-dsin(gama); rc(3,1)=0.d0; rc(3,2)=dsin(gama); rc(3,3)=dcos(gama);
     do i=1,3
       do j=1,3
-        rab(i,j)=0.d0
+        rba(i,j)=0.d0
         do k=1,3
-          rab(i,j)=rab(i,j)+ra(i,k)*rb(k,j)
+          rba(i,j)=rba(i,j)+rb(i,k)*ra(k,j)
         enddo
       enddo
     enddo
@@ -370,11 +480,85 @@ implicit none
       do j=1,3
         vec(i,j)=0.d0
         do k=1,3
-          vec(i,j)=vec(i,j)+rab(i,k)*rc(k,j)
+          vec(i,j)=vec(i,j)+rc(i,k)*rba(k,j)
         enddo
       enddo
     enddo
+
+    
 end subroutine rabc
+
+function jaceta(jxi,alfa,beta,gama) result (jac)
+implicit none
+    real(kind=8)              :: jac(3,3)
+    real(kind=8), intent(in)  :: jxi(3,3)
+    real(kind=8), intent(in)  :: alfa,beta,gama
+    real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3)
+    real(kind=8)              :: rab(3,3),rabc(3,3),rba(3,3),rcba(3,3)
+    real(kind=8)              :: nx(3,3),xn(3,3)
+    integer                   :: i,j,k
+    integer                   :: l,m,n
+    ra(1,1)=dcos(alfa); ra(1,2)=-dsin(alfa); ra(1,3)=0.d0; ra(2,1)=dsin(alfa); ra(2,2)=dcos(alfa); ra(2,3)=0.d0; ra(3,1)=0.d0; ra(3,2)=0.d0; ra(3,3)=1.d0;
+    rb(1,1)=dcos(beta); rb(1,2)=0.d0; rb(1,3)=-dsin(beta); rb(2,1)=0.d0; rb(2,2)=1.d0; rb(2,3)=0.d0; rb(3,1)=dsin(beta); rb(3,2)=0.d0; rb(3,3)=dcos(beta);
+    rc(1,1)=1.d0; rc(1,2)=0.d0; rc(1,3)=0.d0; rc(2,1)=0.d0; rc(2,2)=dcos(gama); rc(2,3)=-dsin(gama); rc(3,1)=0.d0; rc(3,2)=dsin(gama); rc(3,3)=dcos(gama);
+
+    do i=1,3
+      do j=1,3
+        rab(i,j)=0.d0
+        do k=1,3
+          rab(i,j)=rab(i,j)+ra(i,k)*rb(k,j)
+        enddo
+      enddo
+    enddo
+
+    do i=1,3
+      do j=1,3
+        rba(i,j)=0.d0
+        do k=1,3
+          rba(i,j)=rba(i,j)+rb(i,k)*ra(k,j)
+        enddo
+      enddo
+    enddo
+
+
+    do i=1,3
+      do j=1,3
+        rabc(i,j)=0.d0
+        do k=1,3
+          rabc(i,j)=rabc(i,j)+rab(i,k)*rc(k,j)
+        enddo
+      enddo
+    enddo
+
+   do i=1,3
+      do j=1,3
+        rcba(i,j)=0.d0
+        do k=1,3
+          rcba(i,j)=rcba(i,j)+rc(i,k)*rba(k,j)
+        enddo
+      enddo
+    enddo
+
+
+    do i=1,3
+      do j=1,3
+        nx(i,j)=rcba(i,j)
+        xn(i,j)=rabc(i,j)
+      enddo
+    enddo
+
+
+    do i=1,3
+      do j=1,3
+          jac(i,j)=0.d0
+          do l=1,3
+            do m=1,3
+                jac(i,j)=jac(i,j)+nx(i,l)*xn(m,j)*jxi(l,m)
+            enddo
+          enddo
+      enddo
+    enddo
+end function jaceta
 
 
 function hesseta(hxi,alfa,beta,gama) result (h)
@@ -383,7 +567,7 @@ implicit none
     real(kind=8), intent(in)  :: hxi(3,3,3)
     real(kind=8), intent(in)  :: alfa,beta,gama
     real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3)
-    real(kind=8)              :: rab(3,3),rabc(3,3)
+    real(kind=8)              :: rab(3,3),rabc(3,3),rba(3,3),rcba(3,3)
     real(kind=8)              :: nx(3,3),xn(3,3)
     integer                   :: i,j,k
     integer                   :: l,m,n
@@ -398,6 +582,17 @@ implicit none
         enddo
       enddo
     enddo
+
+    do i=1,3
+      do j=1,3
+        rba(i,j)=0.d0
+        do k=1,3
+          rba(i,j)=rba(i,j)+rb(i,k)*ra(k,j)
+        enddo
+      enddo
+    enddo
+
+
     do i=1,3
       do j=1,3
         rabc(i,j)=0.d0
@@ -406,12 +601,24 @@ implicit none
         enddo
       enddo
     enddo
-    do i=1,3
+
+   do i=1,3
       do j=1,3
-        nx(i,j)=rabc(i,j)
-        xn(i,j)=rabc(j,i)
+        rcba(i,j)=0.d0
+        do k=1,3
+          rcba(i,j)=rcba(i,j)+rc(i,k)*rba(k,j)
+        enddo
       enddo
     enddo
+
+
+    do i=1,3
+      do j=1,3
+        nx(i,j)=rcba(i,j)
+        xn(i,j)=rabc(i,j)
+      enddo
+    enddo
+
     do i=1,3
       do j=1,3
         do k=1,3
@@ -428,14 +635,21 @@ implicit none
     enddo
 end function hesseta
 
+function jacnorm(j) result(jnorm)
+implicit none
+    real(kind=8)             :: jnorm
+    real(kind=8), intent(in) :: j(3,3)
+
+    jnorm=j(1,1)
+
+end function jacnorm
+
+
 function hessnorm(h) result(hnorm)
 implicit none
     real(kind=8)             :: hnorm
     real(kind=8), intent(in) :: h(3,3,3)
 
-!    write (*,"(A,100(E20.8))") "h from hnorm",h(1,1,1),h(2,2,2),h(3,3,3)
-!    hnorm=(h(1,1,1)**2+h(2,2,2)**2+h(3,3,3)**2)**0.5
-!    hnorm=h(1,1,1)+h(2,2,2)+h(3,3,3)
     hnorm=h(1,1,1)
     
 end function hessnorm

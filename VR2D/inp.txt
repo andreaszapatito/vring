@@ -1,11 +1,11 @@
 ===Comm===      
 dim                  3
-npth                 1     1    1
+npth                 1     2    2
 
 ===Mesh===
 nx                   1   256  512
-maxr                1.5
-maxz                3.0
+maxr                1  
+maxz                2  
  
 ===Flag===
 poisson              fftp
