@@ -255,7 +255,7 @@ module part_tools
     if(id==8)  prt%r=100.0*(10.0**(-6.0))/0.02
 !    if(id==9)  prt%r=100.0*(10.0**(-6.0))/0.02
 !    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
-    if(id==1)  prt%r=5.000*(10.0**(-6.0))/0.02
+!    if(id==1)  prt%r=5.000*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
@@ -487,7 +487,7 @@ module part_tools
     if (prt%id==9) nsubdt=1
     if (prt%id==10) nsubdt=1
 
-    if (prt%id==1) nsubdt=1
+!    if (prt%id==1) nsubdt=1
   do isubdt=1,nsubdt
     partdt=par%dt/float(nsubdt)
 
