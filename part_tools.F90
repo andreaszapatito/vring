@@ -591,7 +591,7 @@ module part_tools
 !                   prt%yint(iv,1)=float(izof)+float(irof)
 !                   if (ivar==2)  write (*,"(7(I5),100(E20.8))") ivar,ifst1,ifst2,ifst3,itof,irof,izof,prt%yint(iv)
 !                   prt%yint(iv,2)=float(irof)+float(izof)
-if (ivar==1)       prt%yint(iv)=0.0
+!if (ivar==1)       prt%yint(iv)=0.0
 !if (ivar==2)       prt%yint(iv)=min(1.0*msh%rc(irof),0.1*msh%rc(irof)**(-1.d0))
 !if (ivar==2)       prt%yint(iv)=sin(4.0*8.d0*datan(1.d0)*msh%zm(izof))*2.0*sin(4.0*8.d0*datan(1.d0)*msh%rc(irof))
 !if (ivar==2)       prt%yint(iv)=0.0

@@ -5,7 +5,7 @@ ROOT           = ~/
 PREPROC        = -cpp
 #OPT            = -O3  -ffree-line-length-none -I/home/andreas/Local/openmpi/build/include -pthread -L/home/andreas/Local/openmpi/build/lib/
 
-#OPT           = -g -CB -fcheck='all'   -ffree-line-length-none
+OPT           = -g -CB -fcheck='all'   -ffree-line-length-none
 OPT           = -O3 
 
 #FFTW related
