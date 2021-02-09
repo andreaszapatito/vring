@@ -34,7 +34,7 @@
 # Data
 RESTART
 *.dat
-
+*.jpg
 # Tail
 tmp
 *.phy

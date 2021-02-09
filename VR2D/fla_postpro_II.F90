@@ -102,12 +102,12 @@ end interface
     real(kind=8)              :: ftol,fret,par(3,3,3),ppowel(3),xi(3,3)
     integer                   :: dof,iter
 
-tstep=25
+tstep=40
 nr=100
 fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
 fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
 pi4=datan(1.d0)
-do istep=25,tstep
+do istep=0,tstep
   do id=1,8
     nstep=istep*100
     write (timechar,fmt5) nstep
@@ -175,12 +175,12 @@ do istep=25,tstep
   if (.true.) then
       hnormmin=10000.0
       hnormmax=-10000.0
-      do itry=-1,1
-        do jtry=-1,1
-          do ktry=-1,1
+      do itry=0,2
+        do jtry=0,2
+          do ktry=0,2
       
-      alfa=float(itry)*2.0d0
-      beta=float(jtry)*2.0d0
+      alfa=float(itry)*1.0d0
+      beta=float(jtry)*1.0d0
       gama=float(ktry)*2.0d0
 
 
@@ -234,7 +234,7 @@ do istep=25,tstep
           !prod=prod+jhinv(1,ii)*jgrad(ii)
         enddo
         alfa=alfa-prod
-        alfa=dmod(alfa,pi4*8.d0)
+        alfa=dmod(alfa,pi4*4.d0)
 !        write (*,*) "prod a",prod
         prod=0.d0
         do ii=1,3
@@ -242,7 +242,7 @@ do istep=25,tstep
           !prod=prod+jhinv(2,ii)*jgrad(ii)
         enddo
         beta=beta-prod
-       beta=dmod(beta,pi4*8.d0)
+       beta=dmod(beta,pi4*4.d0)
 
 !        write (*,*) "prod b",prod
         prod=0.d0
@@ -277,7 +277,7 @@ do istep=25,tstep
       gama=alpha1(3)
       heta=hesseta(hxi,alfa,beta,gama)
       hnorm=hessnorm(heta)
-      write (*,*) 'part',ip,"nkeep",ikeep,"norm",hnorm,"err",error,"alfa,beta,gama",alfa*45.d0/pi4,beta*45.d0/pi4,gama*45.d0/pi4
+      write (*,*) 'istep',istep,'id',id,'part',ip,"nkeep",ikeep,"norm",hnorm,"err",error,"alfa,beta,gama",alfa*45.d0/pi4,beta*45.d0/pi4,gama*45.d0/pi4
 !      hmag(ip,1)=sqrt(heta(1,1,1)**2+heta(2,2,2)**2+heta(3,3,3)**2)
       hmag(ip,1)=abs(heta(1,1,1))
       call rabc(vec,alfa,beta,gama)
@@ -285,7 +285,9 @@ do istep=25,tstep
       dir(ip,1)=vec(1,1)
       dir(ip,2)=vec(2,1)
       dir(ip,3)=vec(3,1)
-
+      if (dir(ip,3).gt.1.0) write (*,*) "what?",alfa,beta,gama,vec
+      write (*,*) "angles",alfa,beta,gama
+      write (*,*) "vec",vec
     enddo
     open (unit=200,file="post"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='rewind')
     do ip=1,np
@@ -535,40 +537,35 @@ end function hesshess
 subroutine rabc(vec,alfa,beta,gama) 
 implicit none
     real(kind=8), intent(in)  :: alfa,beta,gama
-    real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3)
+    real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3),re(3,3)
     real(kind=8)              :: rab(3,3),rba(3,3),vec(3,3)
     real(kind=8)              :: nx(3,3),xn(3,3)
     integer                   :: i,j,k
     integer                   :: l,m,n
 
+    real(kind=8)              :: c1,c2,c3
+    real(kind=8)              :: s1,s2,s3
 
-    rc(1,1)=1.0;        rc(1,2)=0.0;         rc(1,3)=0.0;
-    rc(2,1)=0.0;        rc(2,2)=cos(gama);   rc(2,3)=-sin(alfa);
-    rc(3,1)=0.0;        rc(3,2)=sin(gama);   rc(3,3)=cos(gama);
+    c1=cos(alfa)
+    c2=cos(beta)
+    c3=cos(gama)
 
-    rb(1,1)=cos(beta);  rb(1,2)=0.0;         rb(1,3)=sin(beta);
-    rb(2,1)=0.0;        rb(2,2)=1.0;         rb(2,3)=0.d0;
-    rb(3,1)=-sin(beta); rb(3,2)=0.0;         rb(3,3)=cos(beta);
+    s1=sin(alfa)
+    s2=sin(beta)
+    s3=sin(gama)
 
-    ra(1,1)=cos(alfa);  ra(1,2)=-sin(alfa);  ra(1,3)=0.d0;
-    ra(2,1)=sin(alfa);  ra(2,2)=cos(alfa);   ra(2,3)=0.d0;
-    ra(3,1)=0.d0;       ra(3,2)=0.d0;        ra(3,3)=1.d0;
+    
+
+    re(1,1)=c2*c3-c1*s2*s3;  re(1,2)=s2*c3+c1*c2*s3; re(1,3)=s1*s3;
+    re(2,1)=-c2*s3-c1*s2*c3; re(2,2)=-s2*s3+c1*c2*c3;re(2,3)=s1*c3;
+    re(3,1)=s1*s2;           re(3,2)=-s1*c2;         re(3,3)=c1;
+
+
 
 
     do i=1,3
       do j=1,3
-        rba(i,j)=0.d0
-        do k=1,3
-          rba(i,j)=rba(i,j)+rb(k,i)*ra(j,k)
-        enddo
-      enddo
-    enddo
-    do i=1,3
-      do j=1,3
-        vec(i,j)=0.d0
-        do k=1,3
-          vec(i,j)=vec(i,j)+rc(k,i)*rba(i,k)
-        enddo
+        vec(i,j)=re(j,i)
       enddo
     enddo
 
@@ -664,75 +661,36 @@ implicit none
     real(kind=8)              :: h(3,3,3)
     real(kind=8), intent(in)  :: hxi(3,3,3)
     real(kind=8), intent(in)  :: alfa,beta,gama
-    real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3)
+    real(kind=8)              :: ra(3,3),rb(3,3),rc(3,3),re(3,3)
     real(kind=8)              :: rab(3,3),rabc(3,3),rba(3,3),rcba(3,3)
     real(kind=8)              :: nx(3,3),xn(3,3)
     integer                   :: i,j,k
     integer                   :: l,m,n
+    real(kind=8)              :: c1,c2,c3
+    real(kind=8)              :: s1,s2,s3
+
+    c1=cos(alfa)
+    c2=cos(beta)
+    c3=cos(gama)
+
+    s1=sin(alfa)
+    s2=sin(beta)
+    s3=sin(gama)
+
+    re(1,1)=c2*c3-c1*s2*s3;  re(1,2)=s2*c3+c1*c2*s3; re(1,3)=s1*s3;
+    re(2,1)=-c2*s3-c1*s2*c3; re(2,2)=-s2*s3+c1*c2*c3;re(2,3)=s1*c3;
+    re(3,1)=s1*s2;           re(3,2)=-s1*c2;         re(3,3)=c1;
 
 
-    rc(1,1)=1.0;        rc(1,2)=0.0;         rc(1,3)=0.0;
-    rc(2,1)=0.0;        rc(2,2)=cos(gama);   rc(2,3)=-sin(alfa);
-    rc(3,1)=0.0;        rc(3,2)=sin(gama);   rc(3,3)=cos(gama);
 
-    rb(1,1)=cos(beta);  rb(1,2)=0.0;         rb(1,3)=sin(beta);
-    rb(2,1)=0.0;        rb(2,2)=1.0;         rb(2,3)=0.d0;
-    rb(3,1)=-sin(beta); rb(3,2)=0.0;         rb(3,3)=cos(beta);
-
-    ra(1,1)=cos(alfa);  ra(1,2)=-sin(alfa);  ra(1,3)=0.d0;
-    ra(2,1)=sin(alfa);  ra(2,2)=cos(alfa);   ra(2,3)=0.d0;
-    ra(3,1)=0.d0;       ra(3,2)=0.d0;        ra(3,3)=1.d0;
-
-
-
-
-    do i=1,3
-      do j=1,3
-        rab(i,j)=0.d0
-        do k=1,3
-          rab(i,j)=rab(i,j)+ra(i,k)*rb(k,j)  ! ab=a b
-        enddo
-      enddo
-    enddo
-
-    do i=1,3
-      do j=1,3
-        rba(i,j)=0.d0
-        do k=1,3
-          rba(i,j)=rba(i,j)+rb(k,i)*ra(j,k) ! ba=b' a'
-        enddo
-      enddo
-    enddo
 
 
     do i=1,3
       do j=1,3
-        rabc(i,j)=0.d0
-        do k=1,3
-          rabc(i,j)=rabc(i,j)+rab(i,k)*rc(k,j) ! abc=ab c
-        enddo
+        nx(i,j)=re(i,j)
+        xn(i,j)=re(j,i)
       enddo
     enddo
-
-   do i=1,3
-      do j=1,3
-        rcba(i,j)=0.d0
-        do k=1,3
-          rcba(i,j)=rcba(i,j)+rc(k,i)*rba(k,j) ! cba=c' ba
-        enddo
-      enddo
-    enddo
-
-
-    do i=1,3
-      do j=1,3
-        nx(i,j)=rabc(i,j)
-        xn(i,j)=rcba(i,j)
-      enddo
-    enddo
-!    write (*,*) "rabc",rabc
-!    write (*,*) "rcba",rcba
-!    write (*,*) "hxi",hxi
     do i=1,3
       do j=1,3
         do k=1,3

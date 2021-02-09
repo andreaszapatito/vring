@@ -269,7 +269,7 @@ module part_tools
     if(id==8)  prt%r=100.0*(10.0**(-6.0))/0.02
 !    if(id==9)  prt%r=100.0*(10.0**(-6.0))/0.02
 !    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
-    if(id==1)  prt%r=10.0*(10.0**(-6.0))/0.02
+!    if(id==1)  prt%r=100.0*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
@@ -501,7 +501,7 @@ module part_tools
     if (prt%id==9) nsubdt=5
     if (prt%id==10) nsubdt=5
 
-    if (prt%id==1) nsubdt=1
+!    if (prt%id==1) nsubdt=1
   do isubdt=1,nsubdt
     partdt=par%dt/float(nsubdt)
 
@@ -591,7 +591,7 @@ module part_tools
 !                   prt%yint(iv,1)=float(izof)+float(irof)
 !                   if (ivar==2)  write (*,"(7(I5),100(E20.8))") ivar,ifst1,ifst2,ifst3,itof,irof,izof,prt%yint(iv)
 !                   prt%yint(iv,2)=float(irof)+float(izof)
-if (ivar==1)       prt%yint(iv)=0.0
+!if (ivar==1)       prt%yint(iv)=0.0
 !if (ivar==2)       prt%yint(iv)=min(1.0*msh%rc(irof),0.1*msh%rc(irof)**(-1.d0))
 !if (ivar==2)       prt%yint(iv)=sin(4.0*8.d0*datan(1.d0)*msh%zm(izof))*2.0*sin(4.0*8.d0*datan(1.d0)*msh%rc(irof))
 !if (ivar==2)       prt%yint(iv)=0.0
@@ -860,9 +860,9 @@ if (ivar==1)       prt%yint(iv)=0.0
             do k=1,3
               prt%ddt(1,ip,prt%ihes+i+3*j-3+9*k-9)=prt%u(ip,prt%ihrt+i+3*j-3+9*k-9)
               sumh=prt%hes(1,j,k)*prt%dvel(i,1)+prt%hes(2,j,k)*prt%dvel(i,2)+prt%hes(3,j,k)*prt%dvel(i,3) &
-              +prt%jac(1,j)*prt%jac(1,k)*prt%ddvel(i,1,1)+prt%jac(2,j)*prt%jac(1,k)*prt%ddvel(i,2,1)+prt%jac(3,j)*prt%jac(1,k)*prt%ddvel(i,3,1) &
-              +prt%jac(1,j)*prt%jac(2,k)*prt%ddvel(i,1,2)+prt%jac(1,j)*prt%jac(3,k)*prt%ddvel(i,1,3)+prt%jac(2,j)*prt%jac(2,k)*prt%ddvel(i,2,2) &
-              +prt%jac(2,j)*prt%jac(3,k)*prt%ddvel(i,2,3)+prt%jac(3,j)*prt%jac(2,k)*prt%ddvel(i,3,2)+prt%jac(3,j)*prt%jac(3,k)*prt%ddvel(i,3,3)
+              +prt%jac(1,j)*prt%jac(1,k)*prt%ddvel(i,1,1)+prt%jac(1,j)*prt%jac(2,k)*prt%ddvel(i,1,2)+prt%jac(1,j)*prt%jac(3,k)*prt%ddvel(i,1,3) &
+              +prt%jac(2,j)*prt%jac(1,k)*prt%ddvel(i,2,1)+prt%jac(2,j)*prt%jac(2,k)*prt%ddvel(i,2,2)+prt%jac(2,j)*prt%jac(3,k)*prt%ddvel(i,2,3) &
+              +prt%jac(3,j)*prt%jac(1,k)*prt%ddvel(i,3,1)+prt%jac(3,j)*prt%jac(2,k)*prt%ddvel(i,3,2)+prt%jac(3,j)*prt%jac(3,k)*prt%ddvel(i,3,3)
 
               prt%ddt(1,ip,prt%ihrt+i+3*j-3+9*k-9)=(1.0/prt%st)*(sumh-prt%u(ip,prt%ihrt+i+3*j-3+9*k-9))
             enddo
