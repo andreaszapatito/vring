@@ -36,6 +36,7 @@ RESTART
 *.dat
 fort.*
 *.jpg
+fort.*
 # Tail
 tmp
 *.phy

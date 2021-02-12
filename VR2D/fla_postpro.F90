@@ -102,12 +102,12 @@ end interface
     real(kind=8)              :: ftol,fret,par(3,3,3),ppowel(3),xi(3,3)
     integer                   :: dof,iter
 
-tstep=25
+tstep=10
 nr=100
 fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
 fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
 pi4=datan(1.d0)
-do istep=25,tstep
+do istep=10,tstep
   do id=1,8
     nstep=istep*100
     write (timechar,fmt5) nstep
@@ -754,7 +754,7 @@ implicit none
     real(kind=8)             :: jnorm
     real(kind=8), intent(in) :: j(3,3)
 
-    jnorm=1.0/abs(j(1,1))
+    jnorm=abs(j(1,1))
 
 end function jacnorm
 

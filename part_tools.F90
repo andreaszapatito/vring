@@ -6,6 +6,7 @@ module part_type
 
 ! Data
     real(kind=8), allocatable      :: u(:,:), ddt(:,:,:), v(:,:),inflow(:),d(:),uinit(:,:)
+    integer     , allocatable      :: initialized(:)
     real(kind=8), allocatable      :: send_buff(:),recv_buff(:)
     real(kind=8), dimension(3)     :: vel
     real(kind=8), dimension(3,3)   :: dvel
@@ -70,6 +71,7 @@ module part_tools
     type(mesh_a)     :: msh
 
     allocate(prt%u(prt%naloc,prt%nvar))
+    allocate(prt%initialized(prt%naloc))
     allocate(prt%uinit(prt%naloc,78))
     allocate(prt%d(prt%nder))
     allocate(prt%ddt(3,prt%naloc,prt%nvar))
@@ -163,7 +165,9 @@ module part_tools
             if (ip>prt%naloc) write (*,*) "icall", icall,x,y,z
             prt%isfre(ip)=0
     endif
+    prt%initialized(ip)=1
     if (icall==1) then
+            prt%initialized(ip)=0
             prt%nids=prt%nids+1
             prt%v(ip,prt%jid)=float(prt%nids)
             write (*,*) 'nids',prt%v(ip,prt%jid),prt%nids,ip,prt%nfree,prt%nlast,prt%npart
@@ -271,6 +275,7 @@ module part_tools
 !    if(id==10) prt%r=200.0*(10.0**(-6.0))/0.02
 !    if(id==1)  prt%r=5.000*(10.0**(-6.0))/0.02
 !    if(id==1)  prt%r=100.0*(10.0**(-6.0))/0.02
+!    if(id==1)  prt%r=5.000*(10.0**(-6.0))/0.02
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
@@ -442,54 +447,6 @@ module part_tools
 !      enddo
 !    endif
 
-    fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
-    fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
-    write (timechar,fmt5) par%nstep
-    write (batchchar,fmt2) prt%id
-    if (mod((par%nstep),prt%expstp).eq.0) then
-      do itask=0,com%np-1
-        if (com%ip==itask) then
-          if (itask.eq.0) then 
-                          open (unit=prt%id+22,file="part"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='rewind')
-            write (prt%id+22,"(A32,E20.8,A12,E20.8,A2)") 'title = "particles diameter: ',prt%r,' stokes: ',prt%st,'"'
-            write (prt%id+22,"(A32,200(A4,I3.3))") 'variables = "id", "time", "c",',(('u',ii),ii=1,prt%nvar),(('d',ii),ii=1,prt%nder)
-          endif
-          if (itask.ne.0) open (unit=prt%id+22,file="part"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='append')
-          do ip=1,prt%nlast
-            if (prt%isfre(ip)==0) then
-
-              prt%d(1)=prt%u(ip,prt%ijac+1)*prt%u(ip,prt%ijac+5)*prt%u(ip,prt%ijac+9) &
-                      +prt%u(ip,prt%ijac+2)*prt%u(ip,prt%ijac+6)*prt%u(ip,prt%ijac+7) &
-                      +prt%u(ip,prt%ijac+3)*prt%u(ip,prt%ijac+4)*prt%u(ip,prt%ijac+8) &
-                      -prt%u(ip,prt%ijac+7)*prt%u(ip,prt%ijac+5)*prt%u(ip,prt%ijac+3) &
-                      -prt%u(ip,prt%ijac+4)*prt%u(ip,prt%ijac+2)*prt%u(ip,prt%ijac+9) &
-                      -prt%u(ip,prt%ijac+8)*prt%u(ip,prt%ijac+6)*prt%u(ip,prt%ijac+1) 
-
-              write (prt%id+22,"(200(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
-            endif
-          enddo
-          close (prt%id+22)
-        endif
-        call MPI_BARRIER(com%comm_0,ierr)
-      enddo
-    endif
-
-    if (mod((par%nstep),prt%expstp).eq.0) then
-    do itask=0,com%np-1
-      if (com%ip==itask) then
-        open (unit=23,file="trajectory_size"//trim(batchchar)//".dat", form='formatted', position='append')
-        do ip=1,prt%nlast
-!          write (*,*) prt%nids,prt%v(ip,prt%jid)
-          if (prt%isfre(ip)==0.and.mod(prt%v(ip,prt%jid)-1.0,1000.0)<0.1) then
-            write (23,"(200(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
-          endif
-        enddo
-        if (itask==com%np-1) write (23,"(100(E20.8))")
-        close (23)
-      endif
-      call MPI_BARRIER(com%comm_0,ierr)
-    enddo
-    endif
 
     if (prt%id==1) nsubdt=20
     if (prt%id==2) nsubdt=10
@@ -575,9 +532,9 @@ module part_tools
 !            if (iz.ge.msh%nz) izc=-1
 !            if (iz.le.1) izc=1
     
-            do ifst1=-1,1,1
-              do ifst2=-1,1,1
-                do ifst3=-1,1,1
+            do ifst1=-1,1
+              do ifst2=-1,1
+                do ifst3=-1,1
                    iv=1+(ifst1+1)+3*(ifst2+1)+9*(ifst3+1)
                    itof=it+ifst1
                    if (itof.gt.msh%ntheta) itof=1
@@ -586,6 +543,7 @@ module part_tools
                    izof=iz+ifst3+izc
                    
                    if (ivar==1) prt%yint(iv)=su%q1(itof,irof,izof)
+                   if (iz==1.and.ivar==3.and.par%istep==100) write (*,*) iz,ifst1,ifst2,ifst3,su%q3(itof,irof,izof),su%q3(it,ir,iz)
                    if (ivar==2.and.msh%rc(irof).gt.0.0001) prt%yint(iv)=su%q2(itof,irof,izof)/msh%rc(irof)
                    if (ivar==2.and.msh%rc(irof).le.0.0001) prt%yint(iv)=0.0
                    if (ivar==3) prt%yint(iv)=su%q3(itof,irof,izof)
@@ -834,6 +792,18 @@ module part_tools
 !       if (ip.eq.1) write (3220+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(2,1,1),prt%ddvel(2,1,2),prt%ddvel(2,1,3),prt%ddvel(2,2,1),prt%ddvel(2,2,2),prt%ddvel(2,2,3),prt%ddvel(2,3,1),prt%ddvel(2,3,2),prt%ddvel(2,3,3)
 !       if (ip.eq.1) write (3230+com%ip,"(100(E20.8))") x,y,z,prt%ddvel(3,1,1),prt%ddvel(3,1,2),prt%ddvel(3,1,3),prt%ddvel(3,2,1),prt%ddvel(3,2,2),prt%ddvel(3,2,3),prt%ddvel(3,3,1),prt%ddvel(3,3,2),prt%ddvel(3,3,3)
 !
+
+        if (prt%initialized(ip).eq.0) then
+          do i=1,3
+            do j=1,3
+              prt%u(ip,prt%ijrt+i+3*j-3)=prt%dvel(i,j)
+              do k=1,3
+                prt%u(ip,prt%ihrt+i+3*j-3+9*k-9)=prt%ddvel(i,j,k)
+              enddo
+            enddo
+          enddo
+          prt%initialized(ip)=1
+        endif
         do i=1,3
           do j=1,3
             prt%jac(i,j)=prt%u(ip,prt%ijac+i+3*j-3)
@@ -1162,6 +1132,54 @@ module part_tools
 !  if (prt%npart>0) write (2000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),prt%vel(1),prt%vel(2),prt%vel(3)
 
   enddo
+    fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
+    fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
+    write (timechar,fmt5) par%nstep
+    write (batchchar,fmt2) prt%id
+    if (mod((par%nstep),prt%expstp).eq.0) then
+      do itask=0,com%np-1
+        if (com%ip==itask) then
+          if (itask.eq.0) then 
+                          open (unit=prt%id+22,file="part"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='rewind')
+            write (prt%id+22,"(A32,E20.8,A12,E20.8,A2)") 'title = "particles diameter: ',prt%r,' stokes: ',prt%st,'"'
+            write (prt%id+22,"(A32,200(A4,I3.3))") 'variables = "id", "time", "c",',(('u',ii),ii=1,prt%nvar),(('d',ii),ii=1,prt%nder)
+          endif
+          if (itask.ne.0) open (unit=prt%id+22,file="part"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', position='append')
+          do ip=1,prt%nlast
+            if (prt%isfre(ip)==0) then
+
+              prt%d(1)=prt%u(ip,prt%ijac+1)*prt%u(ip,prt%ijac+5)*prt%u(ip,prt%ijac+9) &
+                      +prt%u(ip,prt%ijac+2)*prt%u(ip,prt%ijac+6)*prt%u(ip,prt%ijac+7) &
+                      +prt%u(ip,prt%ijac+3)*prt%u(ip,prt%ijac+4)*prt%u(ip,prt%ijac+8) &
+                      -prt%u(ip,prt%ijac+7)*prt%u(ip,prt%ijac+5)*prt%u(ip,prt%ijac+3) &
+                      -prt%u(ip,prt%ijac+4)*prt%u(ip,prt%ijac+2)*prt%u(ip,prt%ijac+9) &
+                      -prt%u(ip,prt%ijac+8)*prt%u(ip,prt%ijac+6)*prt%u(ip,prt%ijac+1) 
+
+              write (prt%id+22,"(200(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
+            endif
+          enddo
+          close (prt%id+22)
+        endif
+        call MPI_BARRIER(com%comm_0,ierr)
+      enddo
+    endif
+
+    if (mod((par%nstep),prt%expstp).eq.0) then
+    do itask=0,com%np-1
+      if (com%ip==itask) then
+        open (unit=23,file="trajectory_size"//trim(batchchar)//".dat", form='formatted', position='append')
+        do ip=1,prt%nlast
+!          write (*,*) prt%nids,prt%v(ip,prt%jid)
+          if (prt%isfre(ip)==0.and.mod(prt%v(ip,prt%jid)-1.0,1000.0)<0.1) then
+            write (23,"(200(E20.8))") (prt%v(ip,ii),ii=1,3),(prt%u(ip,ii),ii=1,prt%nvar),(prt%d(ii),ii=1,prt%nder)
+          endif
+        enddo
+        if (itask==com%np-1) write (23,"(100(E20.8))")
+        close (23)
+      endif
+      call MPI_BARRIER(com%comm_0,ierr)
+    enddo
+    endif
 end subroutine iter_part
 
 end module part_tools
