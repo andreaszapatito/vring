@@ -165,13 +165,25 @@ module divergence
  
 
     if (var%com%ip_a(3).eq.0) then
-      do kc=2,var%msh%nzc
+      do kc=1,var%msh%nzc
         do jc=1,var%msh%nr
           do ic=1,var%msh%ntheta
             var%su%q3(ic,jc,kc)= var%su%dq3(ic,jc,kc)-(var%par%crkalm(var%par%irkstep)*var%par%dt) * var%msh%dx3*( var%sp%dph(ic,jc,kc)- var%sp%dph(ic,jc,kc-1))
           enddo
         enddo
       enddo
+
+
+      do kc=0,0
+        do jc=1,var%msh%nr
+          do ic=1,var%msh%ntheta
+            var%su%q1(ic,jc,kc)= var%su%q1(ic,jc,1)
+            var%su%q2(ic,jc,kc)= var%su%q2(ic,jc,1)
+            var%su%q3(ic,jc,kc)= var%su%q3(ic,jc,1)
+          enddo
+        enddo
+      enddo
+
     else
       do kc=1,var%msh%nzc
         do jc=1,var%msh%nr
