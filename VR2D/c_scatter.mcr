@@ -9,7 +9,7 @@ $!VARSET |NIT| = 1
 $!VARSET |NID| = 1
 $!VARSET |NCS| = 5
 
-$!VARSET |IIT|=4000
+$!VARSET |IIT|=1000
 $!VARSET |IID|=1
 
 

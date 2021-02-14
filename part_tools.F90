@@ -5,7 +5,7 @@ module part_type
   type :: part
 
 ! Data
-    real(kind=8), allocatable      :: u(:,:), ddt(:,:,:), v(:,:),inflow(:),d(:),uinit(:,:)
+    real(kind=8), allocatable      :: u(:,:),uold(:,:),ddt(:,:), v(:,:),inflow(:),d(:),uinit(:,:)
     integer     , allocatable      :: initialized(:)
     real(kind=8), allocatable      :: send_buff(:),recv_buff(:)
     real(kind=8), dimension(3)     :: vel
@@ -74,7 +74,8 @@ module part_tools
     allocate(prt%initialized(prt%naloc))
     allocate(prt%uinit(prt%naloc,78))
     allocate(prt%d(prt%nder))
-    allocate(prt%ddt(3,prt%naloc,prt%nvar))
+    allocate(prt%ddt(prt%naloc,prt%nvar))
+    allocate(prt%uold(prt%naloc,prt%nvar))
     allocate(prt%v(prt%naloc,3))
     allocate(prt%ifree(prt%naloc))
     allocate(prt%isfre(prt%naloc))
@@ -179,9 +180,7 @@ module part_tools
     prt%v(ip,prt%jtme)=0.0
     prt%v(ip,prt%jcon)=c
 
-    prt%ddt(1,ip,:)=0.0
-    prt%ddt(2,ip,:)=0.0
-    prt%ddt(3,ip,:)=0.0
+    prt%ddt(ip,:)=0.0
 
 
 
@@ -222,9 +221,8 @@ module part_tools
 
     prt%u(ip,:)=0.0
     prt%v(ip,:)=0.0
-    prt%ddt(1,ip,:)=0.0
-    prt%ddt(2,ip,:)=0.0
-    prt%ddt(3,ip,:)=0.0
+    prt%ddt(ip,:)=0.0
+    prt%uold(ip,:)=0.0
 
   end subroutine remv_part
 
@@ -288,7 +286,7 @@ module part_tools
     call alct_part(prt,msh)
     prt%u(:,:)=0.d0
     prt%v(:,:)=0.d0
-    prt%ddt(:,:,:)=0.d0
+    prt%ddt(:,:)=0.d0
     prt%ifree(:)=0
     prt%isfre(:)=0
     prt%inflow(:)=0.d0
@@ -817,26 +815,26 @@ module part_tools
         enddo
 
         do i=1,3
-          prt%ddt(1,ip,prt%ipos+i)=prt%u(ip,prt%ivel+i)
-          prt%ddt(1,ip,prt%ivel+i)=(1.0/prt%st)*(prt%vel(i)-prt%u(ip,prt%ivel+i))
+          prt%ddt(ip,prt%ipos+i)=prt%u(ip,prt%ivel+i)
+          prt%ddt(ip,prt%ivel+i)=(1.0/prt%st)*(prt%vel(i)-prt%u(ip,prt%ivel+i))
         enddo
         do i=1,3
           do j=1,3
-            prt%ddt(1,ip,prt%ijac+i+3*j-3)=prt%u(ip,prt%ijrt+i+3*j-3)
+            prt%ddt(ip,prt%ijac+i+3*j-3)=prt%u(ip,prt%ijrt+i+3*j-3)
             sumj=prt%jac(1,j)*prt%dvel(i,1)+prt%jac(2,j)*prt%dvel(i,2)+prt%jac(3,j)*prt%dvel(i,3)
-            prt%ddt(1,ip,prt%ijrt+i+3*j-3)=(1.0/prt%st)*(sumj-prt%u(ip,prt%ijrt+i+3*j-3))
+            prt%ddt(ip,prt%ijrt+i+3*j-3)=(1.0/prt%st)*(sumj-prt%u(ip,prt%ijrt+i+3*j-3))
           enddo
         enddo
         do i=1,3
           do j=1,3
             do k=1,3
-              prt%ddt(1,ip,prt%ihes+i+3*j-3+9*k-9)=prt%u(ip,prt%ihrt+i+3*j-3+9*k-9)
+              prt%ddt(ip,prt%ihes+i+3*j-3+9*k-9)=prt%u(ip,prt%ihrt+i+3*j-3+9*k-9)
               sumh=prt%hes(1,j,k)*prt%dvel(i,1)+prt%hes(2,j,k)*prt%dvel(i,2)+prt%hes(3,j,k)*prt%dvel(i,3) &
               +prt%jac(1,j)*prt%jac(1,k)*prt%ddvel(i,1,1)+prt%jac(1,j)*prt%jac(2,k)*prt%ddvel(i,1,2)+prt%jac(1,j)*prt%jac(3,k)*prt%ddvel(i,1,3) &
               +prt%jac(2,j)*prt%jac(1,k)*prt%ddvel(i,2,1)+prt%jac(2,j)*prt%jac(2,k)*prt%ddvel(i,2,2)+prt%jac(2,j)*prt%jac(3,k)*prt%ddvel(i,2,3) &
               +prt%jac(3,j)*prt%jac(1,k)*prt%ddvel(i,3,1)+prt%jac(3,j)*prt%jac(2,k)*prt%ddvel(i,3,2)+prt%jac(3,j)*prt%jac(3,k)*prt%ddvel(i,3,3)
 
-              prt%ddt(1,ip,prt%ihrt+i+3*j-3+9*k-9)=(1.0/prt%st)*(sumh-prt%u(ip,prt%ihrt+i+3*j-3+9*k-9))
+              prt%ddt(ip,prt%ihrt+i+3*j-3+9*k-9)=(1.0/prt%st)*(sumh-prt%u(ip,prt%ihrt+i+3*j-3+9*k-9))
             enddo
           enddo
         enddo
@@ -895,10 +893,20 @@ module part_tools
 !         endif
 !
 
+
           do i=1,78
-            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(isubrk)*prt%ddt(1,ip,i)*partdt+par%crkrom(isubrk)*prt%ddt(2,ip,i)*partdt
+!            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(isubrk)*prt%ddt(1,ip,i)*partdt+par%crkrom(isubrk)*prt%ddt(2,ip,i)*partdt
 !            prt%u(ip,i)=prt%u(ip,i)+prt%ddt(1,ip,i)*partdt
-            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
+!            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
+            if (isubrk==1) then            
+              prt%uold(ip,i)=prt%u(ip,i)
+              prt%u(ip,i)=(1.0)*prt%uold(ip,i)+partdt*prt%ddt(ip,i)
+            elseif (isubrk==2) then
+              prt%u(ip,i)=(3.0/4.0)*prt%uold(ip,i)+(1.0/4.0)*prt%u(ip,i)+(1.0/4.0)*partdt*prt%ddt(ip,i)
+            elseif (isubrk==3) then
+              prt%u(ip,i)=(1.0/3.0)*prt%uold(ip,i)+(2.0/3.0)*prt%u(ip,i)+(2.0/3.0)*partdt*prt%ddt(ip,i)
+            endif
+
           enddo
           do i=1,3
             prt%u(ip,i+78)=prt%vel(i)
@@ -1021,7 +1029,7 @@ module part_tools
             tag = 1+nspart+ip
             call mpi_send(prt%send_buff,3,MPI_DOUBLE_PRECISION,com%ip_a(idir)+isde,tag,com%comm_a(idir),ierr)
             do iv=1,prt%nvar
-              prt%send_buff(iv)=prt%ddt(2,iploc,iv)
+              prt%send_buff(iv)=prt%uold(iploc,iv)
             enddo
             tag = 1+nspart+ip+3
             call mpi_send(prt%send_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip_a(idir)+isde,tag,com%comm_a(idir),ierr)
@@ -1047,7 +1055,7 @@ module part_tools
             tag = 1+nrpart+ip+3
             call mpi_recv(prt%recv_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip_a(idir)-isde,tag,com%comm_a(idir),status,ierr)
             do iv=1,prt%nvar
-              prt%ddt(2,ipnew,iv)=prt%recv_buff(iv)
+              prt%uold(ipnew,iv)=prt%recv_buff(iv)
             enddo
           enddo
         endif
@@ -1094,7 +1102,7 @@ module part_tools
             tag = 1+nspart+ip
             call mpi_send(prt%send_buff,3,MPI_DOUBLE_PRECISION,com%ip+isd2*com%np_a(3)+isd1,tag,com%comm_0,ierr)
             do iv=1,prt%nvar
-              prt%send_buff(iv)=prt%ddt(2,iploc,iv)
+              prt%send_buff(iv)=prt%uold(iploc,iv)
             enddo
             tag = 1+nspart+ip+3
             call mpi_send(prt%send_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip+isd2*com%np_a(3)+isd1,tag,com%comm_0,ierr)
@@ -1120,7 +1128,7 @@ module part_tools
             tag = 1+nrpart+ip+3
             call mpi_recv(prt%recv_buff,prt%nvar,MPI_DOUBLE_PRECISION,com%ip-isd2*com%np_a(3)-isd1,tag,com%comm_0,status,ierr)
             do iv=1,prt%nvar
-              prt%ddt(2,ipnew,iv)=prt%recv_buff(iv)
+              prt%uold(ipnew,iv)=prt%recv_buff(iv)
             enddo
           enddo
         endif
