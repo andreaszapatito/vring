@@ -398,7 +398,7 @@ module part_tools
     integer :: iv,ivar,ii
     integer :: id,id1,id2,im,jd,kd,ld
     real(kind=8) :: partdt
-    integer :: isubdt,nsubdt
+    integer :: isubdt,nsubdt,isubrk
     integer :: idir,isde,isd1,isd2,ierr,tag,nspart,nrpart,ipnew,itask
     integer, dimension(MPI_STATUS_SIZE) :: status
     real(kind=8) :: dt
@@ -461,6 +461,7 @@ module part_tools
 
 !    if (prt%id==1) nsubdt=1
   do isubdt=1,nsubdt
+   do isubrk=1,3
     partdt=par%dt/float(nsubdt)
 
     prt%nee=0
@@ -895,9 +896,9 @@ module part_tools
 !
 
           do i=1,78
-!            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(irk)*prt%ddt(1,ip,i)*partdt+par%crkrom(irk)*prt%ddt(2,ip,i)*partdt
-            prt%u(ip,i)=prt%u(ip,i)+prt%ddt(1,ip,i)*partdt
-!            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
+            prt%u(ip,i)=prt%u(ip,i)+par%crkgam(isubrk)*prt%ddt(1,ip,i)*partdt+par%crkrom(isubrk)*prt%ddt(2,ip,i)*partdt
+!            prt%u(ip,i)=prt%u(ip,i)+prt%ddt(1,ip,i)*partdt
+            prt%ddt(2,ip,i)=prt%ddt(1,ip,i)
           enddo
           do i=1,3
             prt%u(ip,i+78)=prt%vel(i)
@@ -915,7 +916,7 @@ module part_tools
             enddo
           enddo
 !        endif
-         if (irk==3) prt%v(ip,prt%jtme)=prt%v(ip,prt%jtme)+partdt
+         if (isubrk==1) prt%v(ip,prt%jtme)=prt%v(ip,prt%jtme)+partdt
 
 !         if (isubdt.eq.nsubdt) then
 !           do i=1,78
@@ -1131,6 +1132,7 @@ module part_tools
 !  if (prt%npart>0) write (1000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),(prt%u(1,ii),ii=1,prt%nvar)
 !  if (prt%npart>0) write (2000+com%ip,"(3(I5),100(E20.8))") par%istep,irk,com%ip,(prt%v(1,ii),ii=1,3),prt%vel(1),prt%vel(2),prt%vel(3)
 
+  enddo
   enddo
     fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
     fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left

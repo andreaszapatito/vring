@@ -1,6 +1,6 @@
 ===Comm===      
 dim                  3
-npth                 1     4    8
+npth                 1     4    4
 
 ===Mesh===
 nx                 513   256  512
@@ -13,9 +13,9 @@ poisson              fftp
  
 ===Para===
 dt                   0.001
-totstp          50000
-expstp            500
-anlstp            500 
+totstp          10000
+expstp           1000
+anlstp           1000 
 restrt              0
 verbose              0
 u                    0.0

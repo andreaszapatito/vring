@@ -1,17 +1,17 @@
 Domain decomposition__(comm)_
-n. processors (th,r,z):        00000001        00000004        00000008
+n. processors (th,r,z):        00000001        00000004        00000004
 Mesh characteristics__(mesh)_
-nth,nr,nz   local     :        00000513        00000064        00000064
+nth,nr,nz   local     :        00000513        00000064        00000128
 nth,nr,nz   global    :        00000513        00000256        00000512
 dth,dr,dz             :      0.01224792      0.00585938      0.00585938
 rmax                  :      0.37500000      0.00292969      0.37207031
-zmax                  :      0.37500000      0.00292969      0.37207031
+zmax                  :      0.75000000      0.00292969      0.74707031
 Problem constants_____(cons)_
 solver                :
 Problem parameters____(para)_
-total steps           :        00050000
-export every          :        00000500
-analys every          :        00000500
+total steps           :        00010000
+export every          :        00001000
+analys every          :        00001000
 restart               :        00000000
 u1,v2,w3    nominal   :      0.00000000      0.00000000      0.00000000
 ur,wr,uf,kf nominal   :      0.00000000      0.00000000      0.00000000     16.00000000
