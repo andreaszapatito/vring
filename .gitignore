@@ -30,13 +30,17 @@
 *.exe
 *.out
 *.app
-
+*.x
 # Data
 RESTART
 *.dat
 fort.*
 *.jpg
+*.pdf
 fort.*
+*.tex
+*.log
+*.aux
 # Tail
 tmp
 *.phy

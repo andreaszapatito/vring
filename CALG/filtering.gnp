@@ -1,0 +1,100 @@
+#!/usr/bin/gnuplot
+#
+# Demonstrates a simple usage of gnuplot.
+#
+# AUTHOR: Hagen Wierstorf 
+
+reset
+
+# epslatex
+# NOTE: thes ize is given in inches. It can also be given in cm.
+set terminal epslatex size 10cm,6cm standalone color colortext 10 header "\\usepackage{amsmath}"
+set output 'terminal_epslatex.tex'
+set palette model RGB defined ( 0.1 'blue', 10 'red' )
+
+set lmargin 2.5
+set rmargin 0
+set bmargin 3
+set tmargin 1
+
+
+# Line styles
+set border linewidth 2
+
+
+set style line 11 lt 1 lc rgb '#0072bd' # blue
+set style line 12 lt 1 lc rgb '#d95319' # orange
+set style line 13 lt 1 lc rgb '#edb120' # yellow
+set style line 14 lt 1 lc rgb '#7e2f8e' # purple
+set style line 15 lt 1 lc rgb '#77ac30' # green
+set style line 16 lt 1 lc rgb '#4dbeee' # light-blue
+set style line 17 lt 1 lc rgb '#a2142f' # red
+
+
+#set style line 1 linecolor rgb '#dd181f' linetype 1 linewidth 3  # red
+#set style line 2 linecolor rgb '#000000' linetype 3 linewidth 1  # black
+# Legend
+
+unset key
+set grid linewidth 1
+set size ratio 0.65
+
+set xlabel " $ c^0 $" offset 0.5, -0.0
+set ylabel " $ c^{R_{\\epsilon}} $" offset 0.5, -0.0
+set xrange [-0.1:10000]
+set yrange [-0.1:100]
+set lmargin 3
+set rmargin 0
+set bmargin 3
+set tmargin 1
+set log 
+set size ratio 0.7
+set format y "$10^{%L}$"
+set output "filt00200size01.tex"
+p 'post00200size01.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size01.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size01.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size01.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f'
+set output "filt00200size02.tex"
+p 'post00200size02.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size02.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size02.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size02.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+set output "filt00200size03.tex"
+p 'post00200size03.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size03.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size03.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size03.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+set output "filt00200size04.tex"
+p 'post00200size04.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size04.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size04.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size04.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+set output "filt00200size05.tex"
+p 'post00200size05.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size05.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size05.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size05.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+set output "filt00020size06.tex"
+p 'post00200size06.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size06.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size06.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size06.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+set output "filt00200size07.tex"
+p 'post00200size07.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size07.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size07.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size07.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+set output "filt00200size08.tex"
+p 'post00200size08.dat' u 5:7   w p pt 7 ps 0.2 lc '#4dbeee'\
+, 'post00200size08.dat' u 5:8   w p pt 7 ps 0.2 lc '#77ac30'\
+, 'post00200size08.dat' u 5:9   w p pt 7 ps 0.2 lc '#7e2f8e'\
+, 'post00200size08.dat' u 5:10  w p pt 7 ps 0.2 lc '#a2142f',x w l lw 1 lc "black"
+system ("latex filt00200size01.tex")
+system ("latex filt00200size02.tex")
+system ("latex filt00200size03.tex")
+system ("latex filt00200size04.tex")
+system ("latex filt00200size05.tex")
+system ("latex filt00200size06.tex")
+system ("latex filt00200size07.tex")
+system ("latex filt00200size08.tex")

@@ -102,12 +102,12 @@ end interface
     real(kind=8)              :: ftol,fret,par(3,3,3),ppowel(3),xi(3,3)
     integer                   :: dof,iter
 
-tstep=10
+tstep=2
 nr=100
 fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
 fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
 pi4=datan(1.d0)
-do istep=10,tstep
+do istep=2,tstep
   do id=1,8
     nstep=istep*100
     write (timechar,fmt5) nstep
@@ -125,6 +125,7 @@ do istep=10,tstep
     enddo
     100 continue  
     close (100)
+    write (*,*) "station 3",np
 !    h(:,:,:,:)=0.d0
 !    h(1,1,1,1)=sqrt(3.d0)/2.d0
 !    h(1,1,2,1)=sqrt(1.d0)/2.d0

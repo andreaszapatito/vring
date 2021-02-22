@@ -1,0 +1,226 @@
+% ****** Start of file aipsamp.tex ******
+%
+%   This file is part of the AIP files in the AIP distribution for REVTeX 4.
+%   Version 4.1 of REVTeX, October 2009
+%
+%   Copyright (c) 2009 American Institute of Physics.
+%
+%   See the AIP README file for restrictions and more information.
+%
+% TeX'ing this file requires that you have AMS-LaTeX 2.0 installed
+% as well as the rest of the prerequisites for REVTeX 4.1
+% 
+% It also requires running BibTeX. The commands are as follows:
+%
+%  1)  latex  aipsamp
+%  2)  bibtex aipsamp
+%  3)  latex  aipsamp
+%  4)  latex  aipsamp
+%
+% Use this file as a source of example code for your aip document.
+% Use the file aiptemplate.tex as a template for your document.
+\documentclass[%
+ aip,
+% jmp,
+% bmf,
+% sd,
+% rsi,
+ amsmath,amssymb,
+%preprint,%
+ reprint,%
+%author-year,%
+%author-numerical,%
+% Conference Proceedings
+]{revtex4-1}
+
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+%\usepackage[mathlines]{lineno}% Enable numbering of text and display math
+%\linenumbers\relax % Commence numbering lines
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+
+\begin{document}
+
+\preprint{AIP/123-QED}
+
+\title[Droplet nuclei distribution in exhaled vortex rings.]{Droplet nuclei distribution in exhaled vortex rings. Study of caustic formations with the second order Fully Lagrangian Approach.}
+
+% repeat the \author .. \affiliation  etc. as needed
+% \email, \thanks, \homepage, \altaffiliation all apply to the current author.
+% Explanatory text should go in the []'s, 
+% actual e-mail address or url should go in the {}'s for \email and \homepage.
+% Please use the appropriate macro for the type of information
+
+% \affiliation command applies to all authors since the last \affiliation command. 
+% The \affiliation command should follow the other information.
+
+
+
+\author{A. Papoutsakis}
+\author{M. Gavaises}%
+\email[]{andreas.papoutsakis@city.ac.uk}
+%\homepage[]{Your web page}
+%\thanks{}
+%\altaffiliation{}
+\affiliation{ City University of London. School of Mathematics, Computer Science and Engineering, Department of Mechanical Engineering and Aeronautics, EC1V 0HB, London, UK.}
+
+
+\date{\today}% It is always \today, today,
+             %  but any date may be explicitly specified
+
+\begin{abstract}
+	Vortex ring structures occur in light or hoarse cough configurations. These instances consist of short impulses of exhaled air resulting to a self-contained structure that can travel great distances. In this study we investigate the clustering of droplets and droplet nuclei exhaled in ambient air in conditions akin to light cough. The carrier phase flow field is resolved by means of second order accurate Direct Numerical Simulation (DNS) based on finite difference approach for the momentum equations. The Poisson equation is resolved using Fast Fourier Transform (FFT). The second order Fully Lagrangian Approach (FLA2) is utilised for the solution of the particle dispersion. The evaluation of the higher order derivatives needed by the FLA2 is achieved by pre-fabricated least squares second order interpolations in the three dimensions. The higher moments provided by FLA2 represent the dispersed continuum by deformed spheroids. Given the ambiguous conditions conditions of vortex-ring formation during cough instances three different formation numbers are assummed, i.e. $U*T/D=2$ for under-developed VRs , ideal VRs ($3.7$)  and overdeveloped VRs ($6$).
+\end{abstract}
+
+\maketitle
+
+\section{\label{sec:Intro}Introduction}
+
+According to Simha et al. \cite{PrasannaSimha2020} vortex rings produced by coughs can enhance the transport offine cough droplets.  Vortex ring structures occur in light or hoarse cough configurations. These instances consist of short impulses of exhaled air resulting to a self-contained structure that can travel great distances. The importance of vortex rings in viral transmitions has been exhibited by Dhanak et. al \cite{Verma2020}. 
+
+
+Field review, conditions review.
+
+
+
+Experimental
+
+Theoretical
+
+Vortex rings
+
+Vortex rings DNS
+
+Vortex rings dispersion
+
+In order to simulate the generation of VRs in coughs, we use a nominal cough velocity of $U_0=5m/$sec which is within the bounds for cough measurements \cite{Tang2009,PrasannaSimha2020}.
+Assumming an orifice opening of $D=4 10^-4m^2$ (see Bourouiba et al. \cite{Bourouiba2014}) and a kinematic viscosity $\nu=18 10^6m^2/2$, the Reynolds number of the flow,
+\begin{eqnarray}
+	Re=\frac{U_0 D}{\nu} \;,
+\end{eqnarray}
+is equal to $Re=5555.5$. The characteristic time of the flow $t_0=D/U_0$ is equal to $4m$sec. While the injection time $T$ is related to the formation number $n$ as:
+\begin{eqnarray}
+	n=\frac{1}{D} \int_{t=0}^{t=T} U(t)dt \sim U_0 T/D\;,
+\end{eqnarray}
+where $U(t)$  is the injection profile
+\begin{eqnarray}
+U(t)/U_0= 
+\begin{cases}
+	3\left(\frac{t}{0.2T}\right)^2-2\left(\frac{t}{0.2T}\right)^3, \text{if } x < 0.2T \\
+	1 , \text{if } 0.2T < x < 1.4T\\
+	3\left(\frac{1.6T-t}{0.2T}\right)^2-2\left(\frac{1.6T-t}{0.2T}\right)^3, \text{if } 0.14T < x < 1.6T\\
+	0, 0.16T < x 
+\end{cases}
+\end{eqnarray}
+
+\begin{table}
+\caption{\label{TB0010} Flow conditions for cough in literature}
+\begin{tabular}{l|llll}
+        Author & $u$ & $D$ & $T$ & $d$ \\
+        Simha et al. \cite{Verma2020} & 2$m/$sec-6$m/$sec & - & - & $10\mu$ \\
+        Burbuida et al. \cite{Bourouiba2014} & - & $2$cm &  - & -  \\
+        Duguid \cite{Duguid1946} & - & -  & - & - \\
+        Tang et al. \cite{Tang2009} & 2-25$m/sec$ & - & - & $2\mu$ m
+\end{tabular}
+\end{table}
+ 
+The exhaled droplet and droplet nucleii relaxation time $\tau_0$ is defined as:
+
+\begin{eqnarray}
+	\tau_0=\frac{\rho_{air} d^2}{18 \nu} \;,
+\end{eqnarray}
+and for the conditions of the present study the relaxation time is $\tau_0=3m$sec assumming a droplet diameter equal to $10\mu$m. Droplet size distributions are provided \cite{Duguid1946} in Table~\ref{TB0020}. The cough volume has been measured by \citet{Bourouiba2014}, in the range $0.25-1.25$lt. In our implementation care is taken to represent all droplet sizes by defining droplet nuclei parcels that correspond to $1/c$ droplets. 
+
+From the second order FLA the number density for each droplet size is obtained by the model equation 
+\begin{equation}
+\label{EQ-INT-080}
+\hat{c}=
+        \begin{cases}
+		\frac{2 c_0}{\sqrt{J^2+2 H R_\epsilon} + \sqrt{J^2 - 2 H R_\epsilon} }  & \text{if $ J^2-2 H R_\epsilon  > 0 $ } \\
+         \\
+            \frac{c_0 \sqrt{J^2+2 H R_\epsilon} }{2 R_\epsilon H }  & \text{if $ J^2-2 H R_\epsilon < 0  $ } .
+        \end{cases}
+\end{equation}
+As a function of the initial number density assigned to the parcel $c_0$.
+
+\begin{table}
+\caption{\label{TB0020} Droplet size distribution $N$ as number of nucleii per cough.}
+\begin{tabular}{l|llllllllll}
+Bin & 1 & 2 & 3 & 4 & 5 & 6 &7 &8 &9 &10 \\
+d & 2  & 4   & 8   & 16   & 24  & 32  & 40  & 50  & 75  & 100 \\
+St & $7.5^-4$ & 0.05 &     &      &     &     &     &     &     & 7.7 \\
+n & 50 & 290 & 970 & 1600 & 870 & 420 & 240 & 110 & 140 & 85  \\
+c & 50 & 290 & 970 & 1600 & 870 & 420 & 240 & 110 & 140 & 85  \\
+$\alpha$ & 50 & 290 & 970 & 1600 & 870 & 420 & 240 & 110 & 140 & 85  \\
+\end{tabular}
+\end{table}
+
+
+
+\section{\label{sec:Intro}Method}
+
+
+
+
+The carrier phase flow field is resolved by means of second order accurate Direct Numerical Simulation (DNS) based on finite difference approach for the momentum equations. The Poisson equation is resolved using Fast Fourier Transform (FFT). 
+
+The second order Fully Lagrangian Approach (FLA2) is utilised for the solution of the particle dispersion. 
+
+The evaluation of the higher order derivatives needed by the FLA2 is achieved by pre-fabricated least squares second order interpolations in the three dimensions. The higher moments provided by FLA2 represent the dispersed continuum by deformed spheroids. 
+
+Given the ambiguous conditions conditions of vortex-ring formation during cough instances three different formation numbers are assummed, i.e. $U*T/D=2$ for under-developed VRs , ideal VRs ($3.7$)  and overdeveloped VRs ($6$).
+
+The cases simulated are provided in the Table \ref{TB0030}. Cases C2DN2,C2DNI and C2DN8 are two-dimensional axisymmetric simulations of exhaled VRs that allow for the resolution of long injection times and longer transport distances. Each one of those cases corresponds to different formation numbers allowing to calculate the encapsulation of particles within the VR in relation to the particles left back in the jet core.
+
+Cases C3DN2,C3DNI and C3DN8 are
+ three dimensional turbulent simulations of exhaled VRs that allow for the resolution of the finest turbulent scales ($\Delta x = 0.0039D\sim 2 \eta = Re^{-3/4}D$), for the three different formation numbers as in the two-dimensional cases. The three-dimensional cases are of increasing computational cost due to the increase of the computational domain but also the required simulation time, given that for greater formation numbers the injection period $T$ is longer.
+
+The vorticity contour for the test case C3DNT is shown in the Figure \ref{FG0020}.
+
+\begin{figure*}
+	\includegraphics[width=16cm]{side_II.jpg}% Here is how to import EPS art
+\caption{\label{FG0020} Vorticity contour for the test case C3DNTU.}
+\end{figure*}
+
+
+\begin{table}
+\caption{\label{TB0030} Cases simulated}
+\begin{tabular}{l|lllllll}
+	Name & Domain & $n\theta \times nr \times nz $ & T & n & Re & $T_{CPU} on $\\ 
+	     & size   &                               &($m$sec) &  &  & $32$ Cores\\ \hline
+	C2DN2 & $2D \times 16D$ & $1 \times 512 \times  4096 $ & $8$sec & 2 & 5555,5 & $ <12h$ \\ \hline
+	C2DNI & $2D \times 16D$ & $1 \times 512 \times  4096 $ & $14.8$ & 3.7 & 5555,5 & $ <12h$ \\ \hline
+	C2DN8 & $2D \times 16D$ & $1 \times 512 \times  4096 $ & $32$ & 4 & 5555,5 & $ <12h$ \\ \hline
+	C3DNT & $1D \times  2D$ & $513 \times 256 \times   512 $ & $8$ & 2 & 5555,5 & $12h$ \\ \hline
+	C3DN2 & $2D \times  4D$ & $513 \times 512 \times  1096 $ & $8$ & 2 & 5555,5 & $48h$ \\ \hline
+	C3DNI & $2D \times  4D$ & $513 \times 512 \times  1096 $ & $14.8$ & 3.7 & 5555,& $ 4days$ \\ \hline
+	C3DN8 & $2D \times  8D$ & $513 \times 512 \times  2096 $ & $32$ & 4 & 5555,5  & $ 16days$ \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+
+ \cite{Zayas2012} \cite{Verma2020} \cite{PrasannaSimha2020} \cite{Duguid1946}.
+
+\section{\label{sec:Intro}Results}
+\section{\label{sec:Intro}Conclusion}
+
+
+\begin{acknowledgments}
+\end{acknowledgments}
+
+\appendix
+
+\section{Appendixes}
+
+\nocite{*}
+\bibliography{vortex_ring}% Produces the bibliography via BibTeX.
+
+\end{document}
+%
+% ****** End of file aipsamp.tex ******

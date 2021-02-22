@@ -1,0 +1,125 @@
+%merlin.mbs aipnum4-1.bst 2010-07-25 4.21a (PWD, AO, DPC) hacked
+%Control: key (0)
+%Control: author (8) initials jnrlst
+%Control: editor formatted (1) identically to author
+%Control: production of article title (0) allowed
+%Control: page (1) range
+%Control: year (1) truncated
+%Control: production of eprint (0) enabled
+\begin{thebibliography}{6}%
+\makeatletter
+\providecommand \@ifxundefined [1]{%
+ \@ifx{#1\undefined}
+}%
+\providecommand \@ifnum [1]{%
+ \ifnum #1\expandafter \@firstoftwo
+ \else \expandafter \@secondoftwo
+ \fi
+}%
+\providecommand \@ifx [1]{%
+ \ifx #1\expandafter \@firstoftwo
+ \else \expandafter \@secondoftwo
+ \fi
+}%
+\providecommand \natexlab [1]{#1}%
+\providecommand \enquote  [1]{``#1''}%
+\providecommand \bibnamefont  [1]{#1}%
+\providecommand \bibfnamefont [1]{#1}%
+\providecommand \citenamefont [1]{#1}%
+\providecommand \href@noop [0]{\@secondoftwo}%
+\providecommand \href [0]{\begingroup \@sanitize@url \@href}%
+\providecommand \@href[1]{\@@startlink{#1}\@@href}%
+\providecommand \@@href[1]{\endgroup#1\@@endlink}%
+\providecommand \@sanitize@url [0]{\catcode `\\12\catcode `\$12\catcode
+  `\&12\catcode `\#12\catcode `\^12\catcode `\_12\catcode `\%12\relax}%
+\providecommand \@@startlink[1]{}%
+\providecommand \@@endlink[0]{}%
+\providecommand \url  [0]{\begingroup\@sanitize@url \@url }%
+\providecommand \@url [1]{\endgroup\@href {#1}{\urlprefix }}%
+\providecommand \urlprefix  [0]{URL }%
+\providecommand \Eprint [0]{\href }%
+\providecommand \doibase [0]{http://dx.doi.org/}%
+\providecommand \selectlanguage [0]{\@gobble}%
+\providecommand \bibinfo  [0]{\@secondoftwo}%
+\providecommand \bibfield  [0]{\@secondoftwo}%
+\providecommand \translation [1]{[#1]}%
+\providecommand \BibitemOpen [0]{}%
+\providecommand \bibitemStop [0]{}%
+\providecommand \bibitemNoStop [0]{.\EOS\space}%
+\providecommand \EOS [0]{\spacefactor3000\relax}%
+\providecommand \BibitemShut  [1]{\csname bibitem#1\endcsname}%
+\let\auto@bib@innerbib\@empty
+%</preamble>
+\bibitem [{\citenamefont {Tang}\ \emph {et~al.}(2009)\citenamefont {Tang},
+  \citenamefont {Liebner}, \citenamefont {Craven},\ and\ \citenamefont
+  {Settles}}]{Tang2009}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.~W.}\ \bibnamefont
+  {Tang}}, \bibinfo {author} {\bibfnamefont {T.~J.}\ \bibnamefont {Liebner}},
+  \bibinfo {author} {\bibfnamefont {B.~A.}\ \bibnamefont {Craven}}, \ and\
+  \bibinfo {author} {\bibfnamefont {G.~S.}\ \bibnamefont {Settles}},\
+  }\bibfield  {title} {\enquote {\bibinfo {title} {{A schlieren optical study
+  of the human cough with and without wearing masks for aerosol infection
+  control}},}\ }\href {\doibase 10.1098/rsif.2009.0295.focus} {\bibfield
+  {journal} {\bibinfo  {journal} {Journal of the Royal Society Interface}\
+  }\textbf {\bibinfo {volume} {6}},\ \bibinfo {pages} {S727} (\bibinfo {year}
+  {2009})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Bourouiba}, \citenamefont {Dehandschoewercker},\ and\
+  \citenamefont {Bush}(2014)}]{Bourouiba2014}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {L.}~\bibnamefont
+  {Bourouiba}}, \bibinfo {author} {\bibfnamefont {E.}~\bibnamefont
+  {Dehandschoewercker}}, \ and\ \bibinfo {author} {\bibfnamefont {J.~W.~M.}\
+  \bibnamefont {Bush}},\ }\bibfield  {title} {\enquote {\bibinfo {title}
+  {{Violent expiratory events: on coughing and sneezing}},}\ }\href {\doibase
+  10.1017/jfm.2014.88} {\bibfield  {journal} {\bibinfo  {journal} {J. Fluid
+  Mech}\ }\textbf {\bibinfo {volume} {745}},\ \bibinfo {pages} {537--563}
+  (\bibinfo {year} {2014})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Zayas}\ \emph {et~al.}(2012)\citenamefont {Zayas},
+  \citenamefont {Chiang}, \citenamefont {Wong}, \citenamefont {MacDonald},
+  \citenamefont {Lange}, \citenamefont {Senthilselvan},\ and\ \citenamefont
+  {King}}]{Zayas2012}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {G.}~\bibnamefont
+  {Zayas}}, \bibinfo {author} {\bibfnamefont {M.~C.}\ \bibnamefont {Chiang}},
+  \bibinfo {author} {\bibfnamefont {E.}~\bibnamefont {Wong}}, \bibinfo {author}
+  {\bibfnamefont {F.}~\bibnamefont {MacDonald}}, \bibinfo {author}
+  {\bibfnamefont {C.~F.}\ \bibnamefont {Lange}}, \bibinfo {author}
+  {\bibfnamefont {A.}~\bibnamefont {Senthilselvan}}, \ and\ \bibinfo {author}
+  {\bibfnamefont {M.}~\bibnamefont {King}},\ }\bibfield  {title} {\enquote
+  {\bibinfo {title} {{Cough aerosol in healthy participants: Fundamental
+  knowledge to optimize droplet-spread infectious respiratory disease
+  management}},}\ }\href {\doibase 10.1186/1471-2466-12-11} {\bibfield
+  {journal} {\bibinfo  {journal} {BMC Pulmonary Medicine}\ }\textbf {\bibinfo
+  {volume} {12}},\ \bibinfo {pages} {11} (\bibinfo {year} {2012})}\BibitemShut
+  {NoStop}%
+\bibitem [{\citenamefont {Verma}, \citenamefont {Dhanak},\ and\ \citenamefont
+  {Frankenfield}(2020)}]{Verma2020}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {S.}~\bibnamefont
+  {Verma}}, \bibinfo {author} {\bibfnamefont {M.}~\bibnamefont {Dhanak}}, \
+  and\ \bibinfo {author} {\bibfnamefont {J.}~\bibnamefont {Frankenfield}},\
+  }\bibfield  {title} {\enquote {\bibinfo {title} {{Visualizing droplet
+  dispersal for face shields and masks with exhalation valves}},}\ }\href
+  {\doibase 10.1063/5.0022968} {\bibfield  {journal} {\bibinfo  {journal}
+  {Physics of Fluids}\ }\textbf {\bibinfo {volume} {32}},\ \bibinfo {pages}
+  {91701} (\bibinfo {year} {2020})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {{Prasanna Simha}}\ and\ \citenamefont {{Mohan
+  Rao}}(2020)}]{PrasannaSimha2020}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {P.}~\bibnamefont
+  {{Prasanna Simha}}}\ and\ \bibinfo {author} {\bibfnamefont {P.~S.}\
+  \bibnamefont {{Mohan Rao}}},\ }\bibfield  {title} {\enquote {\bibinfo {title}
+  {{Universal trends in human cough airflows at large distances}},}\ }\href
+  {\doibase 10.1063/5.0021666} {\bibfield  {journal} {\bibinfo  {journal}
+  {Physics of Fluids}\ }\textbf {\bibinfo {volume} {32}},\ \bibinfo {pages}
+  {081905} (\bibinfo {year} {2020})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Duguid}(1946)}]{Duguid1946}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.~P.}\ \bibnamefont
+  {Duguid}},\ }\bibfield  {title} {\enquote {\bibinfo {title} {{The size and
+  the duration of air-carriage of respiratory droplets and droplet-nuclei}},}\
+  }\href {\doibase 10.1017/S0022172400019288} {\bibfield  {journal} {\bibinfo
+  {journal} {Journal of Hygiene}\ }\textbf {\bibinfo {volume} {44}},\ \bibinfo
+  {pages} {471--479} (\bibinfo {year} {1946})}\BibitemShut {NoStop}%
+\end{thebibliography}%

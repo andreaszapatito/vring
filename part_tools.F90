@@ -112,13 +112,15 @@ module part_tools
         do it=1,msh%ntheta
           ut=su%q1(it,ir,1)
           ur=su%q2(it,ir,1)/msh%rm(ir)
-          ut=0.d0
-          ur=0.d0
+!          ut=0.d0
+!          ur=0.d0
           uz=su%q3(it,ir,1)
 !          uz=1.d0
 !          uz=0.d0
-  
+          
+   
           prt%inflow(ir)=prt%inflow(ir)+(prt%c*a*su%q3(it,ir,1)*par%dt*float(prt%inj)/prt%nprcl)
+!          prt%inflow(ir)=prt%inflow(ir)+(prt%c*a*uz*par%dt*float(prt%inj)/prt%nprcl)
           n=floor(prt%inflow(ir))
           prt%inflow(ir)=prt%inflow(ir)-float(n)
           
@@ -278,8 +280,9 @@ module part_tools
 
     prt%c=(10.0**6)*(0.02**3)
     prt%nprcl=0.001
+!    prt%nprcl=0.000025
     prt%inj=10
-    prt%expstp=100
+    prt%expstp=500
     prt%jtme=1
     prt%jcon=2
     prt%jid=3
@@ -402,7 +405,7 @@ module part_tools
     real(kind=8) :: dt
     real(kind=8) :: y0(3)
 
-    real(kind=8) :: x,y,z,r,theta,ut,ur,uz,rs
+    real(kind=8) :: x,y,z,r,theta,ut,ur,uz,rs,radi,thet,zeta,pi
     real(kind=8) :: tp
     real(kind=8) :: sumj,sumh
     real(kind=8) :: drp,dtp,dzp
@@ -542,10 +545,36 @@ module part_tools
                    izof=iz+ifst3+izc
                    
                    if (ivar==1) prt%yint(iv)=su%q1(itof,irof,izof)
-                   if (iz==1.and.ivar==3.and.par%istep==100) write (*,*) iz,ifst1,ifst2,ifst3,su%q3(itof,irof,izof),su%q3(it,ir,iz)
+!                   if (iz==1.and.ivar==3.and.par%istep==100) write (*,*) iz,ifst1,ifst2,ifst3,su%q3(itof,irof,izof),su%q3(it,ir,iz)
                    if (ivar==2.and.msh%rc(irof).gt.0.0001) prt%yint(iv)=su%q2(itof,irof,izof)/msh%rc(irof)
                    if (ivar==2.and.msh%rc(irof).le.0.0001) prt%yint(iv)=0.0
                    if (ivar==3) prt%yint(iv)=su%q3(itof,irof,izof)
+                   
+!                   pi=4.d0*datan(1.d0)
+!                   radi=msh%rm(irof)
+!                   thet=float(nint(theta/(2.0*pi/256.d0))+1-com%ip_a(1)*256)*((2.0*pi/256.d0))
+!                   thet=theta+float(ifst1)*(2.0*pi/256.d0)
+!                   zeta=msh%zm(izof)
+!                   zeta=0.25d0
+!                   if (ivar==1) prt%yint(iv)=-0.5d0*4.d0*radi*radi*sin(1.d0*2.d0*pi*zeta)*sin(5.d0*2.d0*pi*radi)*cos(16.d0*thet)
+!                   radi=msh%rc(irof)
+!                   thet=theta+float(ifst1)*(2.0*pi/256.d0)
+!                   zeta=msh%zm(izof)
+!                   zeta=0.25d0
+!                   if (ivar==2) prt%yint(iv)=0.5d0*4.d0*radi*radi*sin(1.d0*2.d0*pi*zeta)*cos(5.d0*2.d0*pi*radi)*sin(16.d0*thet)
+!                   radi=msh%rm(irof)
+!                   zeta=msh%zc(izof)
+!                   thet=theta+float(ifst1)*(2.0*pi/256.d0)
+! !                  zeta=0.d0
+!                   if (ivar==3) prt%yint(iv)=(1.d0+1.d0*0.0d0*sin(1.d0*2.d0*pi*zeta))
+!
+!
+!                   if (ivar==1) prt%yint(iv)=0.d0
+!                   radi=msh%rc(irof)
+!                   if (ivar==2) prt%yint(iv)=radi
+!                   if (ivar==3) prt%yint(iv)=1.d0
+!                   if (irof.eq.5)    write (*,*) prt%yint(iv),ivar,radi,thet,zeta,pi,itof,irof,izof
+ 
 !                   prt%yint(iv,1)=float(izof)+float(irof)
 !                   if (ivar==2)  write (*,"(7(I5),100(E20.8))") ivar,ifst1,ifst2,ifst3,itof,irof,izof,prt%yint(iv)
 !                   prt%yint(iv,2)=float(irof)+float(izof)
@@ -608,12 +637,21 @@ module part_tools
  
             if (dtp.gt.msh%dtheta) dtp=dtp-8.d0*datan(1.d0)
             if (dtp.lt.-msh%dtheta) dtp=dtp+8.d0*datan(1.d0)
-            f(ivar)=dtp*prt%acoef(1)+drp*prt%acoef(2)+dzp*prt%acoef(3)+dtp*dtp*prt%acoef(4)+dtp*drp*prt%acoef(5)+drp*drp*prt%acoef(6)+drp*dzp*prt%acoef(7)+dzp*dzp*prt%acoef(8)+dzp*dtp*prt%acoef(9)+y0(ivar)
+            f(ivar)=dtp*prt%acoef(1)&
+                   +drp*prt%acoef(2)&
+                   +dzp*prt%acoef(3)&
+               +dtp*dtp*prt%acoef(4)&
+               +dtp*drp*prt%acoef(5)&
+               +drp*drp*prt%acoef(6)&
+               +drp*dzp*prt%acoef(7)&
+               +dzp*dzp*prt%acoef(8)&
+               +dzp*dtp*prt%acoef(9)&
+               +y0(ivar)
 
             ft(ivar)=prt%acoef(1)+2.0*dtp*prt%acoef(4)+drp*prt%acoef(5)+dzp*prt%acoef(9)
             ftt(ivar)=2.0*prt%acoef(4)
-            ftr(ivar)=drp*prt%acoef(5)
-            ftz(ivar)=dzp*prt%acoef(9)
+            ftr(ivar)=prt%acoef(5)
+            ftz(ivar)=prt%acoef(9)
             fr(ivar)=prt%acoef(2)+dtp*prt%acoef(5)+2.0*drp*prt%acoef(6)+dzp*prt%acoef(7)
             frt(ivar)=prt%acoef(5)
             frr(ivar)=2.0*prt%acoef(6)
@@ -627,13 +665,13 @@ module part_tools
             cs=dcos(theta)
             cs2=dcos(2.0*theta)
             FI=(/ ft(ivar), fr(ivar), fz(ivar), ftt(ivar), ftr(ivar), ftz(ivar), frt(ivar), frr(ivar), frz(ivar), fzt(ivar), fzr(ivar), fzz(ivar) /)
-            M(1,1:12)= (/    -sn/r,      cs,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
-            M(2,1:12)= (/     cs/r,      sn,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
-            M(3,1:12)= (/     0.d0,    0.d0,1.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
-            M(4,1:12)= (/ sn2/r**2, sn*sn/r,0.d0, sn*sn/r**2,-cs*sn/r,0.d0,-cs*sn/r, cs*cs,0.d0, 0.d0,0.d0,0.d0 /)
-            M(5,1:12)= (/-cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2,-sn*sn/r,0.d0, cs*cs/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(1,1:12)= (/    -sn/r,            cs,     0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(2,1:12)= (/     cs/r,            sn,     0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(3,1:12)= (/     0.d0,          0.d0,     1.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0, 0.d0,0.d0,0.d0 /)
+            M(4,1:12)= (/ sn2/r**2, sn*sn/r,     0.d0, sn*sn/r**2,-cs*sn/r,0.d0,-cs*sn/r, cs*cs,0.d0, 0.d0,0.d0,0.d0 /)
+            M(5,1:12)= (/ cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2, cs*cs/r,0.d0,-sn*sn/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
             M(6,1:12)= (/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,-sn/r,   0.d0,  0.d0,  cs, 0.d0,0.d0,0.d0 /)
-            M(7,1:12)= (/-cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2, cs*cs/r,0.d0,-sn*sn/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
+            M(7,1:12)= (/ cs2/r**2,-cs*sn/r,0.d0,-cs*sn/r**2, cs*cs/r,0.d0,-sn*sn/r, cs*sn,0.d0, 0.d0,0.d0,0.d0 /)
             M(8,1:12)= (/-sn2/r**2, cs*cs/r,0.d0, cs*cs/r**2, cs*sn/r,0.d0, cs*sn/r, sn*sn,0.d0, 0.d0,0.d0,0.d0 /)
             M(9,1:12)= (/     0.d0,    0.d0,0.d0,       0.d0,    0.d0, cs/r,   0.d0,  0.d0,  sn, 0.d0,0.d0,0.d0 /)
             M(10,1:12)=(/     0.d0,    0.d0,0.d0,       0.d0,    0.d0,0.d0,    0.d0,  0.d0,0.d0,-sn/r,  cs,0.d0 /)
@@ -664,11 +702,11 @@ module part_tools
         NMAT(2,1)= cs;   NMAT(2,2)= sn;   NMAT(2,3)= 0.d0
         NMAT(3,1)= 0.d0; NMAT(3,2)= 0.d0; NMAT(3,3)= 1.d0
 
-        DNMAT(1,1,1)= cs*sn/rs; DNMAT(1,1,2)= sn*sn/rs; DNMAT(1,1,3)= 0.d0
+        DNMAT(1,1,1)= cs*sn/rs; DNMAT(1,1,2)=-cs*cs/rs; DNMAT(1,1,3)= 0.d0
         DNMAT(1,2,1)= sn*sn/rs; DNMAT(1,2,2)=-cs*sn/rs; DNMAT(1,2,3)= 0.d0
         DNMAT(1,3,1)=    0.d0 ; DNMAT(1,3,2)=     0.d0; DNMAT(1,3,3)= 0.d0
 
-        DNMAT(2,1,1)=-cs*cs/rs; DNMAT(2,1,2)=-sn*cs/rs; DNMAT(2,1,3)= 0.d0
+        DNMAT(2,1,1)= sn*sn/rs; DNMAT(2,1,2)=-sn*cs/rs; DNMAT(2,1,3)= 0.d0
         DNMAT(2,2,1)=-sn*cs/rs; DNMAT(2,2,2)= cs*cs/rs; DNMAT(2,2,3)= 0.d0
         DNMAT(2,3,1)=    0.d0 ; DNMAT(2,3,2)=     0.d0; DNMAT(2,3,3)= 0.d0
 
@@ -676,42 +714,30 @@ module part_tools
         DNMAT(3,2,1)=     0.d0; DNMAT(3,2,2)=     0.d0; DNMAT(3,2,3)= 0.d0
         DNMAT(3,3,1)=     0.d0; DNMAT(3,3,2)=     0.d0; DNMAT(3,3,3)= 0.d0
 
+!N11
+        DDNMAT(1,1,1,1)=sn*(-3.d0*cs**2+1.d0)/rs**2; DDNMAT(1,1,1,2)=cs*(-3.d0*sn**2+1.d0)/rs**2  ; DDNMAT(1,1,1,3)= 0.d0
+        DDNMAT(1,1,2,1)=cs*(-3.d0*sn**2+1.d0)/rs**2; DDNMAT(1,1,2,2)=3.d0*cs**2*sn/rs**2          ; DDNMAT(1,1,2,3)= 0.d0
+        DDNMAT(1,1,3,1)=0.d0                       ; DDNMAT(1,1,3,2)=0.d0                         ; DDNMAT(1,1,3,3)= 0.d0
 
-!        DDNMAT(1,1,1,1)=y*(-2.d0*x**2+y**2)/r**5   ; DDNMAT(1,1,1,2)=-3.d0*x*y**2/r**5          ; DDNMAT(1,1,1,3)= 0.d0
-!        DDNMAT(1,1,2,1)=-3.d0*x*y**2/r**5          ; DDNMAT(1,1,2,2)=-y*(-2.d0*x**2+y**2)/r**5  ; DDNMAT(1,1,2,3)= 0.d0
-!        DDNMAT(1,1,3,1)=0.d0                       ; DDNMAT(1,1,3,2)=0.d0                       ; DDNMAT(1,1,3,3)= 0.d0
-
-        DDNMAT(1,1,1,1)=sn*(-2.d0*cs**2+sn**2)/rs**2; DDNMAT(1,1,1,2)=-3.d0*cs*sn**2/rs**2          ; DDNMAT(1,1,1,3)= 0.d0
-        DDNMAT(1,1,2,1)=-3.d0*cs*sn**2/rs**2        ; DDNMAT(1,1,2,2)=-sn*(-2.d0*cs**2+sn**2)/rs**2 ; DDNMAT(1,1,2,3)= 0.d0
-        DDNMAT(1,1,3,1)=0.d0                        ; DDNMAT(1,1,3,2)=0.d0                          ; DDNMAT(1,1,3,3)= 0.d0
-
-!        DDNMAT(1,2,1,1)=x*(x**2-2.d0*y**2)/r**5    ; DDNMAT(1,2,1,2)=-y*(-2.d0*x**2+y**2)/r**5  ; DDNMAT(1,2,1,3)= 0.d0
-!        DDNMAT(1,2,2,1)=-y*(-2.d0*x**2+y**2)/r**5  ; DDNMAT(1,2,2,2)=-x*(x**2-2.d0*y**2)/r**5   ; DDNMAT(1,2,2,3)= 0.d0
-!        DDNMAT(1,2,3,1)=0.d0                       ; DDNMAT(1,2,3,2)=0.d0                       ; DDNMAT(1,2,3,3)= 0.d0
-
-        DDNMAT(1,2,1,1)=cs*(cs**2-2.d0*sn**2)/rs**2   ; DDNMAT(1,2,1,2)=-sn*(-2.d0*cs**2+sn**2)/rs**2 ; DDNMAT(1,2,1,3)= 0.d0
-        DDNMAT(1,2,2,1)=-sn*(-2.d0*cs**2+sn**2)/rs**2 ; DDNMAT(1,2,2,2)=-cs*(cs**2-2.d0*sn**2)/rs**2  ; DDNMAT(1,2,2,3)= 0.d0
+!N12
+        DDNMAT(1,2,1,1)=-3.d0*cs*sn**2/rs**2          ; DDNMAT(1,2,1,2)= sn*(3.d0*cs**2-1.d0)/rs**2   ; DDNMAT(1,2,1,3)= 0.d0
+        DDNMAT(1,2,2,1)=sn*(3.d0*cs**2-1.d0)/rs**2    ; DDNMAT(1,2,2,2)= cs*(3.d0*sn**2-1.d0)/rs**2   ; DDNMAT(1,2,2,3)= 0.d0
         DDNMAT(1,2,3,1)=0.d0                          ; DDNMAT(1,2,3,2)=0.d0                          ; DDNMAT(1,2,3,3)= 0.d0
 
+!N13
         DDNMAT(1,3,1,1)=0.d0; DDNMAT(1,3,1,2)=0.d0; DDNMAT(1,3,1,3)= 0.d0
         DDNMAT(1,3,2,1)=0.d0; DDNMAT(1,3,2,2)=0.d0; DDNMAT(1,3,2,3)= 0.d0
         DDNMAT(1,3,3,1)=0.d0; DDNMAT(1,3,3,2)=0.d0; DDNMAT(1,3,3,3)= 0.d0
 
-!        DDNMAT(2,1,1,1)=x*(x**2-2.d0*y**2)/r**5    ; DDNMAT(2,1,1,2)=-y*(-2.d0*x**2+y**2)/r**5  ; DDNMAT(2,1,1,3)= 0.d0
-!        DDNMAT(2,1,2,1)=-y*(-2.d0*x**2+y**2)/r**5  ; DDNMAT(2,1,2,2)=-x*(x**2-2.d0*y**2)/r**5   ; DDNMAT(2,1,2,3)= 0.d0
-!        DDNMAT(2,1,3,1)=0.d0                       ; DDNMAT(2,1,3,2)=                       0.d0; DDNMAT(2,1,3,3)= 0.d0
+!N21
 
-        DDNMAT(2,1,1,1)=cs*(cs**2-2.d0*sn**2)/rs**2   ; DDNMAT(2,1,1,2)=-sn*(-2.d0*cs**2+sn**2)/rs**2 ; DDNMAT(2,1,1,3)= 0.d0
-        DDNMAT(2,1,2,1)=-sn*(-2.d0*cs**2+sn**2)/rs**2 ; DDNMAT(2,1,2,2)=-cs*(cs**2-2.d0*sn**2)/rs**2  ; DDNMAT(2,1,2,3)= 0.d0
+        DDNMAT(2,1,1,1)=-3.d0*cs*sn**2/rs**2          ; DDNMAT(2,1,1,2)= sn*(3.d0*cs**2-1.d0)/rs**2   ; DDNMAT(2,1,1,3)= 0.d0
+        DDNMAT(2,1,2,1)=sn*(3.d0*cs**2-1.d0)/rs**2    ; DDNMAT(2,1,2,2)= cs*(3.d0*sn**2-1.d0)/rs**2   ; DDNMAT(2,1,2,3)= 0.d0
         DDNMAT(2,1,3,1)=0.d0                          ; DDNMAT(2,1,3,2)=0.d0                          ; DDNMAT(2,1,3,3)= 0.d0
-
-!        DDNMAT(2,2,1,1)=3.d0*x**2*y/r**5           ; DDNMAT(2,2,1,2)=-x*(x**2-2.d0*y**2)/r**5   ; DDNMAT(2,2,1,3)= 0.d0
-!        DDNMAT(2,2,2,1)=-x*(x**2-2.d0*y**2)/r**5   ; DDNMAT(2,2,2,2)=-3.d0*x**2*y/r**5          ; DDNMAT(2,2,2,3)= 0.d0
-!        DDNMAT(2,2,3,1)=0.d0                       ; DDNMAT(2,2,3,2)=0.d0                       ; DDNMAT(2,2,3,3)= 0.d0
-
-        DDNMAT(2,2,1,1)=3.d0*cs**2*sn/rs**2          ; DDNMAT(2,2,1,2)=-cs*(cs**2-2.d0*sn**2)/rs**2   ; DDNMAT(2,2,1,3)= 0.d0
-        DDNMAT(2,2,2,1)=-cs*(cs**2-2.d0*sn**2)/rs**2 ; DDNMAT(2,2,2,2)=-3.d0*cs**2*sn/rs**2           ; DDNMAT(2,2,2,3)= 0.d0
-        DDNMAT(2,2,3,1)=0.d0                         ; DDNMAT(2,2,3,2)=0.d0                           ; DDNMAT(2,2,3,3)= 0.d0
+!N22
+        DDNMAT(2,2,1,1)=sn*(3.d0*cs**2-1.d0)/rs**2    ; DDNMAT(2,2,1,2)=cs*(3.d0*sn**2-1.d0)/rs**2    ; DDNMAT(2,2,1,3)= 0.d0
+        DDNMAT(2,2,2,1)=cs*(3.d0*sn**2-1.d0)/rs**2    ; DDNMAT(2,2,2,2)=-3.d0*sn*cs**2/rs**2          ; DDNMAT(2,2,2,3)= 0.d0
+        DDNMAT(2,2,3,1)=0.d0                          ; DDNMAT(2,2,3,2)=0.d0                          ; DDNMAT(2,2,3,3)= 0.d0
 
         DDNMAT(2,3,1,1)=0.d0; DDNMAT(2,3,1,2)=0.d0; DDNMAT(2,3,1,3)= 0.d0
         DDNMAT(2,3,2,1)=0.d0; DDNMAT(2,3,2,2)=0.d0; DDNMAT(2,3,2,3)= 0.d0
@@ -720,11 +746,9 @@ module part_tools
         DDNMAT(3,1,1,1)=0.d0; DDNMAT(3,1,1,2)=0.d0; DDNMAT(3,1,1,3)= 0.d0
         DDNMAT(3,1,2,1)=0.d0; DDNMAT(3,1,2,2)=0.d0; DDNMAT(3,1,2,3)= 0.d0
         DDNMAT(3,1,3,1)=0.d0; DDNMAT(3,1,3,2)=0.d0; DDNMAT(3,1,3,3)= 0.d0
-
         DDNMAT(3,2,1,1)=0.d0; DDNMAT(3,2,1,2)=0.d0; DDNMAT(3,2,1,3)= 0.d0
         DDNMAT(3,2,2,1)=0.d0; DDNMAT(3,2,2,2)=0.d0; DDNMAT(3,2,2,3)= 0.d0
         DDNMAT(3,2,3,1)=0.d0; DDNMAT(3,2,3,2)=0.d0; DDNMAT(3,2,3,3)= 0.d0
-
         DDNMAT(3,3,1,1)=0.d0; DDNMAT(3,3,1,2)=0.d0; DDNMAT(3,3,1,3)= 0.d0
         DDNMAT(3,3,2,1)=0.d0; DDNMAT(3,3,2,2)=0.d0; DDNMAT(3,3,2,3)= 0.d0
         DDNMAT(3,3,3,1)=0.d0; DDNMAT(3,3,3,2)=0.d0; DDNMAT(3,3,3,3)= 0.d0
@@ -739,7 +763,8 @@ module part_tools
           do jd=1,3
             prt%dvel(id,jd)=0.d0
             do kd=1,3
-              prt%dvel(id,jd)=prt%dvel(id,jd)+dff(kd,jd)*NMAT(id,kd)+ff(kd)*DNMAT(jd,id,kd)
+!             prt%dvel(id,jd)=prt%dvel(id,jd)+dff(kd,jd)*NMAT(id,kd)+ff(kd)*DNMAT(jd,id,kd)  ! (jd,id,kd) or (id,kd,jd)?
+              prt%dvel(id,jd)=prt%dvel(id,jd)+dff(kd,jd)*NMAT(id,kd)+ff(kd)*DNMAT(id,kd,jd)  ! (jd,id,kd) or (id,kd,jd)?
             enddo
           enddo
         enddo
@@ -748,7 +773,8 @@ module part_tools
             do ld=1,3
               prt%ddvel(id,jd,ld)=0.d0
               do kd=1,3
-                prt%ddvel(id,jd,ld)=prt%ddvel(id,jd,ld)+ddff(kd,jd,ld)*NMAT(id,kd)+dff(kd,jd)*DNMAT(ld,id,kd)+dff(kd,ld)*DNMAT(jd,id,kd)+ff(kd)*DDNMAT(ld,jd,id,kd)
+!                prt%ddvel(id,jd,ld)=prt%ddvel(id,jd,ld)+ddff(kd,jd,ld)*NMAT(id,kd)+dff(kd,jd)*DNMAT(ld,id,kd)+dff(kd,ld)*DNMAT(jd,id,kd)+ff(kd)*DDNMAT(ld,jd,id,kd)
+                prt%ddvel(id,jd,ld)=prt%ddvel(id,jd,ld)+ddff(kd,jd,ld)*NMAT(id,kd)+dff(kd,jd)*DNMAT(id,kd,ld)+dff(kd,ld)*DNMAT(id,kd,jd)+ff(kd)*DDNMAT(id,kd,jd,ld)
               enddo
             enddo
           enddo

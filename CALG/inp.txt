@@ -1,0 +1,30 @@
+===Comm===      
+dim                  3
+npth                 1     1    2
+
+===Mesh===
+nx                   1   256  512
+maxr                1  
+maxz                2  
+ 
+===Flag===
+poisson              fftp
+
+ 
+===Para===
+dt                   0.001
+totstp           1000
+expstp           1000
+anlstp           1000
+restrt              0
+verbose              0
+u                    0.0
+v                    0.0
+w                    0.0
+w                    0.0   0.0  0.0 16.0
+rw.r0.rh             1.0   0.5  5.0 
+p                    1.0
+Re                1000.0
+Pe                   1.0
+nrkstep              3
+slip                 0.0

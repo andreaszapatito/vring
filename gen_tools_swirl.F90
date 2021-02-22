@@ -137,7 +137,7 @@ module gen_tools
             pi=4.0*atan(1.0)
             if (r<0.5) then
               u=min(0.2,t*r)
-              u=-0.13*4.0*r*r*sin(10.0*2.0*pi*t)*sin(10.0*2.0*pi*r)*cos(16.0*th)
+              u=-0.13*4.0*r*r*sin(5.0*2.0*pi*t)*sin(5.0*2.0*pi*r)*cos(16.0*th)
             endif
            u=0.0
           end function  profilet
