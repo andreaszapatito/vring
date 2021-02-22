@@ -175,7 +175,8 @@ c      write (*,*) "input",a,m,n
             endif
             goto 3
           endif
-          if(its.eq.30) pause 'no convergence in svdcmp'
+c         if(its.eq.30) pause 'no convergence in svdcmp'
+          if(its.eq.30) write(*,*)'no convergence in svdcmp'
           x=w(l)
           nm=k-1
           y=w(nm)

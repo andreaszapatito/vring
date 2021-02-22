@@ -1,4 +1,4 @@
-include make_cedar.inc
+include make_city.inc
 LOCALOBJ= \
 	gen_tools_swirl.o \
 	cons_tools.o \

@@ -104,13 +104,13 @@ end interface
     real(kind=8)              :: ftol,fret,par(3,3,3),ppowel(3),xi(3,3)
     integer                   :: dof,iter,nskip
 ch=.true.
-tstep=30
+tstep=40
 nr=100
 fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
 fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
 pi4=datan(1.d0)
 nskip=1
-do istep=30,tstep
+do istep=40,tstep
   do id=1,8
     nstep=istep*100
     write (timechar,fmt5) nstep
@@ -327,7 +327,7 @@ endif
         c1=(1.0/j2(ip))*2.0/(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(abs(j1(ip))**2-2.d0*hmag(ip,1)*r)) 
       else
         c1=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(-abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
-        c1=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
+        !c1=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
       endif
 
 !      if (c1.gt.1.0/abs(j1(ip))) then
@@ -338,7 +338,7 @@ endif
         c01=(1.0/j2(ip))*2.0/(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(abs(j1(ip))**2-2.d0*hmag(ip,1)*r)) 
       else
         c01=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(-abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
-        c01=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
+        !c01=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
       endif
 
 
@@ -347,7 +347,7 @@ endif
         c001=(1.0/j2(ip))*2.0/(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(abs(j1(ip))**2-2.d0*hmag(ip,1)*r)) 
       else
         c001=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(-abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
-        c001=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
+        !c001=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
       endif
 
 
@@ -356,7 +356,7 @@ endif
         c0001=(1.0/j2(ip))*2.0/(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(abs(j1(ip))**2-2.d0*hmag(ip,1)*r)) 
       else
         c0001=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r)+sqrt(-abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
-        c0001=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
+        !c0001=(sqrt(abs(j1(ip))**2+2.d0*hmag(ip,1)*r))/(2.d0*hmag(ip,1)*r*j2(ip))
       endif
 
       !cmag=1.d0/abs(j1(ip))
