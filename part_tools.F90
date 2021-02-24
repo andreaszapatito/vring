@@ -279,7 +279,7 @@ module part_tools
     prt%st=(1.0/18.0)*(998.0/1.2)*(prt%r**2)*par%Re
 
     prt%c=(10.0**6)*(0.02**3)
-    prt%nprcl=0.001
+    prt%nprcl=0.002
 !    prt%nprcl=0.000025
     prt%inj=10
     prt%expstp=500

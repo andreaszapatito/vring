@@ -1,6 +1,6 @@
-include make_cedar.inc
+include make_city.inc
 LOCALOBJ= \
-	gen_tools_swirl.o \
+	gen_tools_swirl3D.o \
 	cons_tools.o \
 	comm_tools.o \
 	para_tools.o \
