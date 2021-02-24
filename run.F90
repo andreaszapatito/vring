@@ -533,12 +533,7 @@ module run_tools
     endif
   call mpi_barrier(var%com%comm_0, ierr)
  enddo
-
-
-
   end subroutine restart_load
-
-
 
   subroutine verbose(var,message)
   type(run)                :: var

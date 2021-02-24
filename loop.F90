@@ -42,6 +42,7 @@ module loop
       var%con%timming0= MPI_Wtime()/60.0
       do id=1,nparticles
         call init_part(id,var%prt(id),var%msh,var%par)
+        if (var%par%restrt.eq.1) call restart_part (id,var%prt(id),var%msh,var%com,var%su,var%par)
       enddo
 ! Time advancement loop start
     do istep= 0,var%par%totstp

@@ -169,7 +169,7 @@ module part_tools
             prt%isfre(ip)=0
     endif
     prt%initialized(ip)=1
-    if (icall==1) then
+    if (icall==1.or.icall==4) then
             prt%initialized(ip)=0
             prt%nids=prt%nids+1
             prt%v(ip,prt%jid)=float(prt%nids)
@@ -257,7 +257,7 @@ module part_tools
 
     prt%npart=0
     prt%tpart=0
-    prt%naloc=50000
+    prt%naloc=80000
 
     prt%nfree=0
     prt%nlast=0
@@ -379,6 +379,7 @@ module part_tools
          
          
  subroutine iter_part(irk,prt,msh,com,su,par)
+
     implicit none
     type(part)      :: prt
     type(mesh_a)    :: msh
@@ -1217,5 +1218,83 @@ module part_tools
     enddo
     endif
 end subroutine iter_part
+
+subroutine restart_part(id,prt,msh,com,su,par)
+
+
+ implicit none
+ type(part)      :: prt
+ type(mesh_a)    :: msh
+ type(comm)      :: com
+ type(solu)      :: su
+ type(para)      :: par
+
+ integer                  :: ii
+ integer                  :: iz
+ integer                  :: ir
+ integer                  :: ipr,ipz
+ integer                  :: izl,irl
+ integer                  :: ith
+ integer                  :: ip,ipfile,ipnew
+ integer                  :: ierr
+ integer                  :: id
+ real(kind=8)             :: xc,yc,ux,uy,buf,x,y,z,r
+ real(kind=8)             :: vfile(3),ufile(78)
+ integer                  :: iferr
+
+ character(len=8)         :: fmt5,fmt2 ! format descriptor
+ character(5)             :: timechar
+ character(2)             :: batchchar
+ character(2)             :: rkchar
+ character(100)           :: cbuf
+
+ fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
+ fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
+ write (timechar,fmt5) par%nstepi
+ write (batchchar,fmt2) prt%id
+
+ do ip=0,com%np-1
+   if (ip.eq.com%ip) then
+     open (unit=22,file="pstart"//trim(timechar)//"size"//trim(batchchar)//".dat", form='formatted', status='old')
+     read (22,*) cbuf
+     read (22,*) cbuf
+     ipfile=0
+     iferr=0
+
+     write (*,*) "pstart"//trim(timechar)//"size"//trim(batchchar)//".dat",cbuf
+     do while (iferr.eq.0)
+       read (22,"(200(E20.8))",iostat=iferr) (vfile(ii),ii=1,3),(ufile(ii),ii=1,78)
+       if (iferr.eq.0) then
+         ipfile=ipfile+1
+         
+         x=ufile(1)
+         y=ufile(2)
+         z=ufile(3)
+         r=sqrt(x**2+y**2)
+  
+         ir=floor(r/msh%dr)+1-com%ip_a(2)*msh%nr
+         iz=floor(z/msh%dz)+1-com%ip_a(3)*msh%nz
+         if (iz.le.msh%nz.and.iz.ge.1.and.ir.le.msh%nr.and.ir.ge.1) then
+          write (*,*) ip,ipfile,ir,iz,(iz.le.msh%nz.and.iz.ge.1.and.ir.le.msh%nr.and.ir.ge.1)
+          call injc_part(0.d0,0.d0,0.d0,prt%c,0.d0,0.d0,0.d0,prt,ipnew,4)
+          do ii=1,3
+            prt%v(ipnew,ii)=vfile(ii)
+          enddo
+          do ii=1,78
+            prt%u(ipnew,ii)=ufile(ii)
+          enddo
+         endif
+       else 
+         exit
+       endif
+     enddo
+     close(22)
+     write (*,*) 'exited',ipfile
+   endif
+   call mpi_barrier(com%comm_0, ierr)
+ enddo
+
+
+  end subroutine restart_part
 
 end module part_tools

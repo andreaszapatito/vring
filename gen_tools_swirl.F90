@@ -163,7 +163,7 @@ module gen_tools
             tt=t
 !           tt=mod(t,2.0)
             pi=4.0*atan(1.0)
-            n=2.0
+            n=3.7
             t1=0.1*n
             t2=0.9*n
             

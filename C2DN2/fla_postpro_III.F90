@@ -104,13 +104,13 @@ end interface
     real(kind=8)              :: ftol,fret,par(3,3,3),ppowel(3),xi(3,3)
     integer                   :: dof,iter,nskip
 ch=.true.
-tstep=5
+tstep=8
 nr=100
 fmt5 = '(I5.5)' ! an integer of width 5 with zeros at the left
 fmt2 = '(I2.2)' ! an integer of width 5 with zeros at the left
 pi4=datan(1.d0)
 nskip=1
-do istep=5,tstep
+do istep=8,tstep
   do id=1,8
     nstep=istep*500
     write (timechar,fmt5) nstep
